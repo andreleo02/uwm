@@ -1,0 +1,276 @@
+[
+  {
+    "dev_id": "r718x-677e",
+    "time": "2023-02-27T16:01:00+00:00",
+    "temperature": 16.4,
+    "distance": 199,
+    "filllevel": 74,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9656557,
+      "lat": -37.8025769
+    },
+    "sensor_name": "r718x-bin sensor 12",
+    "fill_level": 72
+  },
+  {
+    "dev_id": "r718x-676b",
+    "time": "2023-02-26T15:35:59+00:00",
+    "temperature": 16.2,
+    "distance": 203,
+    "filllevel": 74,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9664732,
+      "lat": -37.8027498
+    },
+    "sensor_name": "r718x-bin sensor 1",
+    "fill_level": 72
+  },
+  {
+    "dev_id": "r718x-6f06",
+    "time": "2023-02-26T15:44:31+00:00",
+    "temperature": 16.5,
+    "distance": 203,
+    "filllevel": 89,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9661516,
+      "lat": -37.8032959
+    },
+    "sensor_name": "r718x-bin sensor 13",
+    "fill_level": 72
+  },
+  {
+    "dev_id": "r718x-6773",
+    "time": "2023-02-26T15:47:55+00:00",
+    "temperature": 16.4,
+    "distance": 225,
+    "filllevel": 71,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9665562,
+      "lat": -37.8022471
+    },
+    "sensor_name": "r718x-bin sensor 5",
+    "fill_level": 69
+  },
+  {
+    "dev_id": "r718x-6f0f",
+    "time": "2023-02-26T15:50:50+00:00",
+    "temperature": 16.8,
+    "distance": 208,
+    "filllevel": 89,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9652423,
+      "lat": -37.8026257
+    },
+    "sensor_name": "r718x-bin sensor 15",
+    "fill_level": 71
+  },
+  {
+    "dev_id": "r718x-6f33",
+    "time": "2023-02-26T15:52:27+00:00",
+    "temperature": 23.4,
+    "distance": 200,
+    "filllevel": 90,
+    "battery": 3.6,
+    "lat_long": null,
+    "sensor_name": null,
+    "fill_level": 72
+  },
+  {
+    "dev_id": "r718x-6f35",
+    "time": "2023-02-26T15:57:19+00:00",
+    "temperature": 17,
+    "distance": 216,
+    "filllevel": 72,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9661648,
+      "lat": -37.8021666
+    },
+    "sensor_name": "r718x-bin sensor 21",
+    "fill_level": 70
+  },
+  {
+    "dev_id": "r718x-676f",
+    "time": "2023-02-26T15:58:30+00:00",
+    "temperature": 16.8,
+    "distance": 229,
+    "filllevel": 70,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9665057,
+      "lat": -37.8021852
+    },
+    "sensor_name": "r718x-bin sensor 3",
+    "fill_level": 68
+  },
+  {
+    "dev_id": "r718x-6771",
+    "time": "2023-02-26T16:01:39+00:00",
+    "temperature": 16.7,
+    "distance": 286,
+    "filllevel": 63,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9652622,
+      "lat": -37.8032085
+    },
+    "sensor_name": "r718x-bin sensor 4",
+    "fill_level": 60
+  },
+  {
+    "dev_id": "r718x-6778",
+    "time": "2023-02-26T08:16:47+00:00",
+    "temperature": 19,
+    "distance": 209,
+    "filllevel": 73,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9658434,
+      "lat": -37.8025943
+    },
+    "sensor_name": "r718x-bin sensor 8",
+    "fill_level": 71
+  },
+  {
+    "dev_id": "r718x-6773",
+    "time": "2023-02-26T08:18:02+00:00",
+    "temperature": 19.1,
+    "distance": 228,
+    "filllevel": 70,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9665562,
+      "lat": -37.8022471
+    },
+    "sensor_name": "r718x-bin sensor 5",
+    "fill_level": 68
+  },
+  {
+    "dev_id": "r718x-6f16",
+    "time": "2023-02-26T08:18:10+00:00",
+    "temperature": 19.9,
+    "distance": 202,
+    "filllevel": 74,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9662728,
+      "lat": -37.8028794
+    },
+    "sensor_name": "r718x-bin sensor 17",
+    "fill_level": 72
+  },
+  {
+    "dev_id": "r718x-677d",
+    "time": "2023-02-26T08:18:02+00:00",
+    "temperature": 20.7,
+    "distance": 200,
+    "filllevel": 74,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9654523,
+      "lat": -37.8021051
+    },
+    "sensor_name": "r718x-bin sensor 11",
+    "fill_level": 72
+  },
+  {
+    "dev_id": "r718x-677c",
+    "time": "2023-02-26T08:18:11+00:00",
+    "temperature": 18.8,
+    "distance": 297,
+    "filllevel": 62,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9661258,
+      "lat": -37.8032818
+    },
+    "sensor_name": "r718x-bin sensor 10",
+    "fill_level": 59
+  },
+  {
+    "dev_id": "r718x-6775",
+    "time": "2023-02-26T08:25:51+00:00",
+    "temperature": 19.6,
+    "distance": 302,
+    "filllevel": 61,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9660728,
+      "lat": -37.8026209
+    },
+    "sensor_name": "r718x-bin sensor 7",
+    "fill_level": 58
+  },
+  {
+    "dev_id": "r718x-6f10",
+    "time": "2023-02-26T08:26:23+00:00",
+    "temperature": 23,
+    "distance": 65535,
+    "filllevel": 255,
+    "battery": 3.6,
+    "lat_long": null,
+    "sensor_name": null,
+    "fill_level": -8877
+  },
+  {
+    "dev_id": "r718x-677e",
+    "time": "2023-02-26T08:30:51+00:00",
+    "temperature": 18.6,
+    "distance": 200,
+    "filllevel": 74,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9656557,
+      "lat": -37.8025769
+    },
+    "sensor_name": "r718x-bin sensor 12",
+    "fill_level": 72
+  },
+  {
+    "dev_id": "r718x-6778",
+    "time": "2023-02-26T08:31:47+00:00",
+    "temperature": 18.9,
+    "distance": 209,
+    "filllevel": 73,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9658434,
+      "lat": -37.8025943
+    },
+    "sensor_name": "r718x-bin sensor 8",
+    "fill_level": 71
+  },
+  {
+    "dev_id": "r718x-677a",
+    "time": "2023-02-26T08:35:54+00:00",
+    "temperature": 19.3,
+    "distance": 215,
+    "filllevel": 72,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9657946,
+      "lat": -37.8028672
+    },
+    "sensor_name": "r718x-bin sensor 9",
+    "fill_level": 70
+  },
+  {
+    "dev_id": "r718x-6f16",
+    "time": "2023-02-26T08:48:10+00:00",
+    "temperature": 19.4,
+    "distance": 202,
+    "filllevel": 74,
+    "battery": 3.6,
+    "lat_long": {
+      "lon": 144.9662728,
+      "lat": -37.8028794
+    },
+    "sensor_name": "r718x-bin sensor 17",
+    "fill_level": 72
+  }
+]
