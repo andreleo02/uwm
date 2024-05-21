@@ -19,3 +19,4 @@ if __name__ == "__main__":
     file.close()
 
     insert_data(bin_collection, data)
+    print("Data inserted successfully!")
