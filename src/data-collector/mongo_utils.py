@@ -14,5 +14,10 @@ def get_or_create_collection(mongo_db: Database, collection_name: str) -> Collec
     return mongo_db[collection_name]
 
 def insert_data(mongo_collection: Collection, data):
-    mongo_collection.insert_many(data)
+    mongo_collection.insert_many(documents = data)
+
+def save_data_on_mongo(data, collection_name):
+    mongo_db = get_or_create_database()
+    bin_collection = get_or_create_collection(mongo_db = mongo_db, collection_name = collection_name)
+    insert_data(mongo_collection = bin_collection, data = data)
 

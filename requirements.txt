@@ -1,1 +1,4 @@
 pymongo[srv]
+schedule
+psycopg2
+pika
