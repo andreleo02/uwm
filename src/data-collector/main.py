@@ -38,7 +38,7 @@ from event_reader import Reader, ConnectionException
 # for api in api_calls:
 #     read_data_api(api = api, historical_data = True)
 #     every(interval = api.interval()).seconds.do(read_data_api, api, historical_data = False)
-reader = Reader()
+reader = Reader(topic = "bins")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 if len(logger.handlers) == 0:

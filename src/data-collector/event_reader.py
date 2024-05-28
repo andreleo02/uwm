@@ -2,11 +2,7 @@ from kafka import KafkaConsumer, TopicPartition
 from kafka.errors import NoBrokersAvailable
 import logging
 import json
-import os
 import time
-
-topic = os.environ.get('PCDEMO_CHANNEL') or 'new_data_topic'
-
 
 class ConnectionException(Exception):
     pass
@@ -14,9 +10,10 @@ class ConnectionException(Exception):
 
 class Reader:
 
-    def __init__(self):
+    def __init__(self, topic):
         self.logger = self.setup_logger()
         self.logger.info("Initializing the consumer")
+        self.topic = topic
         while not hasattr(self, 'consumer'):
             self.logger.info("Getting the kafka consumer")
             try:
@@ -30,9 +27,8 @@ class Reader:
                 self.logger.error("Unable to find a broker: {0}".format(err))
                 time.sleep(10)
 
-        self.logger.info("Exiting ...")
         self.logger.info("We have a consumer {0}".format(time.time()))
-        self.consumer.subscribe(topic)
+        self.consumer.subscribe(self.topic)
         # Wait for the topic creation and seek back to the beginning
         self.consumer.poll(timeout_ms=10000)
         self.consumer.seek(TopicPartition(topic, 0), 0)
@@ -55,7 +51,7 @@ class Reader:
         the event payload is json.
         :return: The event in json form
         """
-        self.logger.info("Reading stream: {0}".format(topic))
+        self.logger.info("Reading stream: {0}".format(self.topic))
         try:
             if self.consumer:
                 self.logger.info("A consumer is calling 'next'")
