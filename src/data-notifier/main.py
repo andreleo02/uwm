@@ -34,14 +34,13 @@ def read_data_api(api: ApiCall, historical_data: bool = True):
         logger.info(f"Calling api to get new data for collection {api.collection_name()} ...")
         url += parse.quote(f"&where=time>date'{api.last_data()}'", safe = "&=-")
     response = requests.get(url)
-    dispatcher.push({"boh": "boh"})
     if response.status_code == 200:
         data = response.json()
         if data["results"] is not None and len(data["results"]) > 0:
             api.set_last_data(data["results"][0]["time"])
             for res in data["results"]:
                 logger.debug("request had the following data: {0}".format(res))
-                dispatcher.push(res)
+                dispatcher.push(topic = api.collection_name(), message = res)
         else:
             logger.info(f"No new data found for collection {api.collection_name()}\n")
     else:

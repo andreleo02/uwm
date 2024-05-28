@@ -1,11 +1,8 @@
 from kafka import KafkaProducer
 from kafka.errors import NoBrokersAvailable
 import json
-import os
 import time
 import logging
-
-topic = os.environ.get('PCDEMO_CHANNEL') or 'new_data_topic'
 
 
 class Publisher:
@@ -15,8 +12,7 @@ class Publisher:
         while not hasattr(self, 'producer'):
             try:
                 self.producer = KafkaProducer(bootstrap_servers="kafka:9092", api_version=(3, 7, 0),
-                                              value_serializer = lambda v: json.dumps(v).encode('utf-8')
-                                              )
+                                              value_serializer = lambda v: json.dumps(v).encode('utf-8'))
             except NoBrokersAvailable as err:
                 self.logger.error("Unable to find a broker: {0}".format(err))
                 time.sleep(1)
@@ -31,7 +27,7 @@ class Publisher:
             logger.addHandler(handler)
         return logger
 
-    def push(self, message):
+    def push(self, topic, message):
         self.logger.info("Publishing: {0}".format(message))
         try:
             if self.producer:
