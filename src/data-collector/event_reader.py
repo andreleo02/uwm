@@ -23,7 +23,9 @@ class Reader:
                 self.consumer = KafkaConsumer(bootstrap_servers="kafka:9092",
                                               consumer_timeout_ms=10,
                                               auto_offset_reset='earliest',
-                                              group_id=None)
+                                              group_id=None,
+                                              api_version=(3, 7, 0),
+                                              value_deserializer = lambda v: json.loads(v.decode('utf-8')))
             except NoBrokersAvailable as err:
                 self.logger.error("Unable to find a broker: {0}".format(err))
                 time.sleep(10)
@@ -68,7 +70,7 @@ class Reader:
                     self.logger.debug('Read an event from the stream {}'.
                                       format(event))
                     try:
-                        return json.loads(event)
+                        return event
                     except json.decoder.JSONDecodeError:
                         return json.loads(f'{{ "message": "{event}" }}')
                 except (StopIteration, IndexError):

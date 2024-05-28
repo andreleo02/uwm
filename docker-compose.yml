@@ -53,32 +53,51 @@ services:
     volumes:
       - ./data/postgres:/data
 
+  # kafka:
+  #   image: "bitnami/kafka:3.6"
+  #   container_name: kafka
+  #   ports:
+  #     - 9092:9092
+  #   environment:
+  #     - KAFKA_BROKER_ID=1
+  #     - KAFKA_CFG_NODE_ID=1
+  #     - KAFKA_CFG_PROCESS_ROLES=broker,controller
+  #     - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+  #     - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+  #     - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+  #     - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
+  #     - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+  #     - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+  #     - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+  #     - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
+  #     - KAFKA_CFG_LOG_DIRS=/opt/bitnami/kafka/data
+  #   healthcheck:
+  #     test: kafka-topics.sh --bootstrap-server localhost:9092 --topic new_data_topic --create --if-not-exists && kafka-topics.sh --bootstrap-server localhost:9092 --topic new_data_topic --describe
+  #     retries: 5
+  #   volumes:
+  #     - ./data/kafka:/data
   kafka:
-    image: "bitnami/kafka:3.6"
+    image: bitnami/kafka:latest
     container_name: kafka
     ports:
-      - 9092:9092
+      - "9092:9092" # external
+      - "29092:29092" # internal
     environment:
-      # - KAFKA_CFG_NODE_ID=0
-      # - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      # - KAFKA_CFG_LISTENERS=PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
-      # - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      # - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@localhost:9093
-      # - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_BROKER_ID=1
       - KAFKA_CFG_NODE_ID=1
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,EXTERNAL://kafka:9092
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
       - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
-      - KAFKA_CFG_LOG_DIRS=/opt/bitnami/kafka/data
+      - KAFKA_CFG_LOG_DIRS=/bitnami/kafka/data
     healthcheck:
-      test: kafka-topics.sh --bootstrap-server localhost:9092 --topic new_data_topic --create --if-not-exists && kafka-topics.sh --bootstrap-server localhost:9092 --topic new_data_topic --describe
+      test:
+        ["CMD-SHELL", "kafka-topics.sh --bootstrap-server kafka:9092 --list"]
+      interval: 5s
+      timeout: 10s
       retries: 5
-    volumes:
-      - ./data/kafka:/data

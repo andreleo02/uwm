@@ -14,7 +14,9 @@ class Publisher:
         self.logger = self.setup_logger()
         while not hasattr(self, 'producer'):
             try:
-                self.producer = KafkaProducer(bootstrap_servers="kafka:9092")
+                self.producer = KafkaProducer(bootstrap_servers="kafka:9092", api_version=(3, 7, 0),
+                                              value_serializer = lambda v: json.dumps(v).encode('utf-8')
+                                              )
             except NoBrokersAvailable as err:
                 self.logger.error("Unable to find a broker: {0}".format(err))
                 time.sleep(1)
@@ -30,11 +32,11 @@ class Publisher:
         return logger
 
     def push(self, message):
-        self.logger.debug("Publishing: {0}".format(message))
+        self.logger.info("Publishing: {0}".format(message))
         try:
             if self.producer:
-                self.producer.send(topic,
-                                   bytes(json.dumps(message).encode('utf-8')))
-        except AttributeError:
+                self.producer.send(topic, value = message)
+                self.producer.flush()
+        except Exception:
             self.logger.error("Unable to send {0}. The producer does not exist."
                               .format(message))
