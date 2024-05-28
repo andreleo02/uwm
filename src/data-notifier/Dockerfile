@@ -4,6 +4,6 @@ COPY . .
 
 RUN pip install -r ./requirements.txt 
 
-EXPOSE 8082
+EXPOSE 8080
 
 CMD [ "python", "main.py" ]
