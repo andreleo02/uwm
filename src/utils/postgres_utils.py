@@ -5,7 +5,7 @@ import pandas as pd
 user = 'postgres'
 password = 'password'
 host = 'localhost'
-database = 'db'
+database = 'db_waste'
 
 # Establishing the connection
 conn = psycopg2.connect(user = user, password = password, host = host, database = database)
@@ -64,6 +64,9 @@ def close_connection():
     if conn:
         conn.close()
 
+
+def save_data_on_postgres(data):
+    return
 # Close connection example
 # close_connection()
    
