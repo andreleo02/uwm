@@ -1,5 +1,78 @@
 import time, json, logging
 from event_reader import Reader, ConnectionException
+#from src.utils.mongo_utils import save_data_on_mongo
+import sys
+import os
+
+# @edit DA AGGIUSTARE IMPORTAZIONE DA UTILS/MONGO_UTILS
+#from utils.mongo_utils import save_data_on_mongo
+# MONGO_PARAMS = "mongodb://root:password"
+# MONGO_URL = "localhost"
+
+# from pymongo import MongoClient
+# from pymongo.database import Database
+# from pymongo.collection import Collection
+
+# def get_or_create_database(database_name: str = "urban_waste") -> Database:
+#     CONNECTION_STRING = f"{MONGO_PARAMS}@{MONGO_URL}"
+#     client = MongoClient(CONNECTION_STRING)
+#     return client[database_name]
+
+# def get_or_create_collection(mongo_db: Database, collection_name: str) -> Collection:
+#     return mongo_db[collection_name]
+
+# # @edit ho modificato questa funzione per farla funzionare con i messaggi che manda
+# def insert_data(mongo_collection, data):
+#     if isinstance(data, list) and data:
+#         mongo_collection.insert_many(documents = data)
+#     else:
+#         logger.warning("Data must be a non-empty list. No data inserted.")
+#         return
+# def save_data_on_mongo(data, collection_name):
+#     mongo_db = get_or_create_database()
+#     bin_collection = get_or_create_collection(mongo_db = mongo_db, collection_name = collection_name)
+#     insert_data(mongo_collection = bin_collection, data = data)
+
+topics = ['bins', 'weather', 'air']
+
+for topic in topics:
+    reader = Reader(topic = topic)
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    if len(logger.handlers) == 0:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)  
+
+    while True:
+        logger.info("Receiving messages ... ")
+        time.sleep(1)
+        try:
+            message = reader.next()
+            #logger.info("Message received: %s", json.dumps(message))
+            if message is not None or message != []:
+                save_data_on_mongo(data = message, collection_name = topic)
+                logger.info("Data saved on mongo.")
+                # logger.info(json.dumps({
+                #     'status': 'success',
+                #     'message': 'Data saved on mongo.'}), 200)    non so perchè ma da errrori
+            else:  
+                print(f"No new data found for collection {topic}\n")
+            
+
+        except ConnectionException:
+            logger.info(json.dumps({
+                'status': 'connection_error',
+                'message': 'Unable to read from the message stream.'}))
+
+        logger.info("Read this data from the stream: {0}".format(message))
+        if message:
+            logger.info(json.dumps(message))
+
+
+
+
 # limit = 100 # max is 100
 # BASE_API = "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets"
 # API_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/records?order_by=time%20DESC&limit={limit}"
@@ -38,25 +111,3 @@ from event_reader import Reader, ConnectionException
 # for api in api_calls:
 #     read_data_api(api = api, historical_data = True)
 #     every(interval = api.interval()).seconds.do(read_data_api, api, historical_data = False)
-reader = Reader(topic = "bins")
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-if len(logger.handlers) == 0:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-while True:
-    logger.info("whiling ... ")
-    time.sleep(1)
-    try:
-        message = reader.next()
-    except ConnectionException:
-        logger.info(json.dumps({
-            'status': 'connection_error',
-            'message': 'Unable to read from the message stream.'}), 500)
-
-    logger.info("Read this data from the stream: {0}".format(message))
-    if message:
-        logger.info(json.dumps(message))

@@ -2,3 +2,4 @@ requests
 schedule
 urllib3
 kafka-python
+pymongo[srv]
