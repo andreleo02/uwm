@@ -5,33 +5,9 @@ import sys
 import os
 
 # @edit DA AGGIUSTARE IMPORTAZIONE DA UTILS/MONGO_UTILS
-#from utils.mongo_utils import save_data_on_mongo
-# MONGO_PARAMS = "mongodb://root:password"
-# MONGO_URL = "localhost"
+#from src.utils.mongo_utils import *
+from eliminare import *
 
-# from pymongo import MongoClient
-# from pymongo.database import Database
-# from pymongo.collection import Collection
-
-# def get_or_create_database(database_name: str = "urban_waste") -> Database:
-#     CONNECTION_STRING = f"{MONGO_PARAMS}@{MONGO_URL}"
-#     client = MongoClient(CONNECTION_STRING)
-#     return client[database_name]
-
-# def get_or_create_collection(mongo_db: Database, collection_name: str) -> Collection:
-#     return mongo_db[collection_name]
-
-# # @edit ho modificato questa funzione per farla funzionare con i messaggi che manda
-# def insert_data(mongo_collection, data):
-#     if isinstance(data, list) and data:
-#         mongo_collection.insert_many(documents = data)
-#     else:
-#         logger.warning("Data must be a non-empty list. No data inserted.")
-#         return
-# def save_data_on_mongo(data, collection_name):
-#     mongo_db = get_or_create_database()
-#     bin_collection = get_or_create_collection(mongo_db = mongo_db, collection_name = collection_name)
-#     insert_data(mongo_collection = bin_collection, data = data)
 
 topics = ['bins', 'weather', 'air']
 
@@ -50,13 +26,17 @@ for topic in topics:
         time.sleep(1)
         try:
             message = reader.next()
-            #logger.info("Message received: %s", json.dumps(message))
-            if message is not None or message != []:
+            logger.info("Message received: %s", json.dumps(message))
+            if message is not None:    
+                message = json.dumps(message)
+                message = json.loads(message)
+                message = [message]
+                #print(message.dtype)
                 save_data_on_mongo(data = message, collection_name = topic)
                 logger.info("Data saved on mongo.")
                 # logger.info(json.dumps({
                 #     'status': 'success',
-                #     'message': 'Data saved on mongo.'}), 200)    non so perchè ma da errrori
+                #     'message': 'Data saved on mongo.'}), 200)    ##non so perchè ma da errrori
             else:  
                 print(f"No new data found for collection {topic}\n")
             
@@ -67,8 +47,8 @@ for topic in topics:
                 'message': 'Unable to read from the message stream.'}))
 
         logger.info("Read this data from the stream: {0}".format(message))
-        if message:
-            logger.info(json.dumps(message))
+        #if message:
+            #logger.info(json.dumps(message))
 
 
 

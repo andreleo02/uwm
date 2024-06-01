@@ -32,7 +32,7 @@ class Reader:
         # Wait for the topic creation and seek back to the beginning
         self.consumer.poll(timeout_ms=10000)
         self.consumer.seek(TopicPartition(topic, 0), 0)
-        self.logger.info("ok {0}".format(time.time()))
+        #self.logger.info("ok {0}".format(time.time()))
 
     def setup_logger(self):
         logger = logging.getLogger()
