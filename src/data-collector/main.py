@@ -1,5 +1,57 @@
 import time, json, logging
 from event_reader import Reader, ConnectionException
+#from src.utils.mongo_utils import save_data_on_mongo
+import sys
+import os
+
+# @edit DA AGGIUSTARE IMPORTAZIONE DA UTILS/MONGO_UTILS
+#from src.utils.mongo_utils import *
+from eliminare import *
+
+
+import threading
+
+def process_topic(topic):
+    reader = Reader(topic = topic)
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    logging.info(f"Reading data from topic {topic} ...")
+
+    if len(logger.handlers) == 0:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)  
+
+    while True:
+        logger.info("Receiving messages ... ")
+        time.sleep(1)
+        try:
+            message = reader.next()
+            logger.info("Message received: %s", json.dumps(message))
+            if message is not None or message != "":    
+                message = json.dumps(message)
+                message = json.loads(message)
+                message = [message]
+                save_data_on_mongo(data = message, collection_name = topic)
+                logger.info("Data saved on mongo.")
+            else:  
+                print(f"No new data found for collection {topic}\n")
+        except ConnectionException:
+            logger.info(json.dumps({
+                'status': 'connection_error',
+                'message': 'Unable to read from the message stream.'}))
+
+        logger.info("Read this data from the stream: {0}".format(message))
+
+topics = ['air', 'bins', 'weather']
+
+for topic in topics:
+    threading.Thread(target=process_topic, args=(topic,)).start()
+
+
+
+
 # limit = 100 # max is 100
 # BASE_API = "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets"
 # API_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/records?order_by=time%20DESC&limit={limit}"
@@ -38,25 +90,3 @@ from event_reader import Reader, ConnectionException
 # for api in api_calls:
 #     read_data_api(api = api, historical_data = True)
 #     every(interval = api.interval()).seconds.do(read_data_api, api, historical_data = False)
-reader = Reader(topic = "bins")
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-if len(logger.handlers) == 0:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-while True:
-    logger.info("whiling ... ")
-    time.sleep(1)
-    try:
-        message = reader.next()
-    except ConnectionException:
-        logger.info(json.dumps({
-            'status': 'connection_error',
-            'message': 'Unable to read from the message stream.'}), 500)
-
-    logger.info("Read this data from the stream: {0}".format(message))
-    if message:
-        logger.info(json.dumps(message))
