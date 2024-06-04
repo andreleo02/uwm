@@ -2,11 +2,13 @@ class ApiCall:
 
     def __init__(self,
                  url: str,
+                 export_url: str,
                  collection_name: str,
                  interval: int,
                  save_on_mongo: bool,
                  save_on_postgres: bool) -> None:
         self._url = url
+        self._export_url = export_url
         self._collection_name = collection_name
         self._interval = interval
         self._save_on_mongo = save_on_mongo
@@ -15,6 +17,9 @@ class ApiCall:
     
     def url(self) -> str:
         return self._url
+    
+    def export_url(self) -> str:
+        return self._export_url
     
     def collection_name(self) -> str:
         return self._collection_name

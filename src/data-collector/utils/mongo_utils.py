@@ -1,5 +1,5 @@
 MONGO_PARAMS = "mongodb://root:password"
-MONGO_URL = "localhost"
+MONGO_URL = "mongodb:27017"
 
 from pymongo import MongoClient
 from pymongo.database import Database
@@ -18,6 +18,6 @@ def insert_data(mongo_collection: Collection, data):
 
 def save_data_on_mongo(data, collection_name):
     mongo_db = get_or_create_database()
-    bin_collection = get_or_create_collection(mongo_db = mongo_db, collection_name = collection_name)
-    insert_data(mongo_collection = bin_collection, data = data)
+    collection = get_or_create_collection(mongo_db = mongo_db, collection_name = collection_name)
+    insert_data(mongo_collection = collection, data = data)
 
