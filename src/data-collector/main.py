@@ -9,12 +9,14 @@ import os
 from eliminare import *
 
 
-topics = ['bins', 'weather', 'air']
+import threading
 
-for topic in topics:
+def process_topic(topic):
     reader = Reader(topic = topic)
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
+    logging.info(f"Reading data from topic {topic} ...")
+
     if len(logger.handlers) == 0:
         handler = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -27,28 +29,25 @@ for topic in topics:
         try:
             message = reader.next()
             logger.info("Message received: %s", json.dumps(message))
-            if message is not None:    
+            if message is not None or message != "":    
                 message = json.dumps(message)
                 message = json.loads(message)
                 message = [message]
-                #print(message.dtype)
                 save_data_on_mongo(data = message, collection_name = topic)
                 logger.info("Data saved on mongo.")
-                # logger.info(json.dumps({
-                #     'status': 'success',
-                #     'message': 'Data saved on mongo.'}), 200)    ##non so perchè ma da errrori
             else:  
                 print(f"No new data found for collection {topic}\n")
-            
-
         except ConnectionException:
             logger.info(json.dumps({
                 'status': 'connection_error',
                 'message': 'Unable to read from the message stream.'}))
 
         logger.info("Read this data from the stream: {0}".format(message))
-        #if message:
-            #logger.info(json.dumps(message))
+
+topics = ['air', 'bins', 'weather']
+
+for topic in topics:
+    threading.Thread(target=process_topic, args=(topic,)).start()
 
 
 

@@ -2,6 +2,10 @@
 
 Project for Big Data Technology Course 2023/2024
 
+
+Mongo Express: [http://localhost:8081/db/urban_waste/]
+Kafka UI: [http://localhost:9000/]
+
 ## How to run the application with docker compose
 
 Ensure to have Docker installed on the machine.
