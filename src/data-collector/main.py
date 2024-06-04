@@ -1,15 +1,6 @@
-import time, json, logging
+import threading, time, json, logging
 from event_reader import Reader, ConnectionException
-#from src.utils.mongo_utils import save_data_on_mongo
-import sys
-import os
-
-# @edit DA AGGIUSTARE IMPORTAZIONE DA UTILS/MONGO_UTILS
-#from src.utils.mongo_utils import *
-from eliminare import *
-
-
-import threading
+from utils.mongo_utils import save_data_on_mongo
 
 def process_topic(topic):
     reader = Reader(topic = topic)
@@ -21,20 +12,20 @@ def process_topic(topic):
         handler = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
-        logger.addHandler(handler)  
+        logger.addHandler(handler)
 
     while True:
-        logger.info("Receiving messages ... ")
         time.sleep(1)
         try:
             message = reader.next()
-            logger.info("Message received: %s", json.dumps(message))
             if message is not None or message != "":    
                 message = json.dumps(message)
+                logger.debug(f"Message received: {message}")
                 message = json.loads(message)
                 message = [message]
-                save_data_on_mongo(data = message, collection_name = topic)
-                logger.info("Data saved on mongo.")
+                if len(message) > 0:
+                    save_data_on_mongo(data = message, collection_name = topic)
+                    logger.info("Data saved on mongo.")
             else:  
                 print(f"No new data found for collection {topic}\n")
         except ConnectionException:
@@ -42,51 +33,10 @@ def process_topic(topic):
                 'status': 'connection_error',
                 'message': 'Unable to read from the message stream.'}))
 
-        logger.info("Read this data from the stream: {0}".format(message))
+        logger.info(f"Read this data from the stream: {message}")
 
-topics = ['air', 'bins', 'weather']
+if __name__ == "__main__":
+    topics = ['air', 'bins', 'weather']
 
-for topic in topics:
-    threading.Thread(target=process_topic, args=(topic,)).start()
-
-
-
-
-# limit = 100 # max is 100
-# BASE_API = "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets"
-# API_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/records?order_by=time%20DESC&limit={limit}"
-# API_WEATHER = f"{BASE_API}/meshed-sensor-type-1/records?order_by=time%20DESC&limit={limit}&timezone=Australia%2FMelbourne"
-# API_AIR = f"{BASE_API}/argyle-square-air-quality/records?order_by=time%20DESC&limit={limit}&timezone=Australia%2FMelbourne"
-
-# bins_api = ApiCall(url = API_BINS, collection_name = "bins", interval = 60, save_on_mongo = True, save_on_postgres = False)
-# weather_api = ApiCall(url = API_WEATHER, collection_name = "weather", interval = 300, save_on_mongo = True, save_on_postgres = False)
-# air_api = ApiCall(url = API_AIR, collection_name = "air", interval = 600, save_on_mongo = True, save_on_postgres = False)
-# api_calls = [bins_api, weather_api, air_api]
-
-# def read_data_api(api: ApiCall, historical_data: bool = True):
-#     url = api.url()
-#     if historical_data:
-#         print(f"Calling api to get historical data for collection {api.collection_name()} ...")
-#     else:
-#         print(f"Calling api to get new data for collection {api.collection_name()} ...")
-#         url += parse.quote(f"&where=time>date'{api.last_data()}'", safe = "&=-")
-#     response = requests.get(url)
-  
-#     if response.status_code == 200:
-#         data = response.json()
-#         if data["results"] is not None and len(data["results"]) > 0:
-#             api.set_last_data(data["results"][0]["time"])
-#             if api.save_on_mongo():
-#                 save_data_on_mongo(data = data["results"], collection_name = api.collection_name())
-#                 print("New data saved on mongo!\n")
-#             if api.save_on_postgres():
-#                 save_data_on_postgres(data = data["results"])
-#                 print("New data saved on postgres!\n")
-#         else:
-#             print(f"No new data found for collection {api.collection_name()}\n")
-#     else:
-#         print(f"Error getting data for collection {api.collection_name()}. \n Calling url {api.url()}", response.status_code)
-
-# for api in api_calls:
-#     read_data_api(api = api, historical_data = True)
-#     every(interval = api.interval()).seconds.do(read_data_api, api, historical_data = False)
+    for topic in topics:
+        threading.Thread(target = process_topic, args = (topic, )).start()
