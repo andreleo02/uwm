@@ -1,7 +1,7 @@
 services:
   data-notifier:
     ports:
-      - 8080:8080
+      - 8083:8083
     container_name: data-notifier
     build:
       context: src/data-notifier
@@ -88,3 +88,59 @@ services:
       - JVM_OPTS=-Xms32M -Xmx64M
     depends_on:
       - kafka
+
+
+  spark-master:
+    build:
+      context: spark
+      dockerfile: ./Dockerfile
+    container_name: spark-master
+    command: /bin/bash -c "chmod +x /spark.sh && bin/spark-class org.apache.spark.deploy.master.Master"
+    #command: bin/spark-class org.apache.spark.deploy.master.Master
+    user: root
+    ports:
+      - "9090:8080"
+      - "7077:7077"
+    networks:
+      spark-network:
+        ipv4_address: 192.168.240.2
+    volumes:   #questo serve per montare il file spark.sh per avere le autorizzazioni necessarie
+      - ./spark.sh:/spark.sh
+
+  spark-worker-1:
+    image: bitnami/spark:latest
+    container_name: spark-worker-1
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://192.168.240.2:7077
+    depends_on:
+      - spark-master
+    environment:
+      SPARK_MODE: worker
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 2g
+      SPARK_MASTER_URL: spark://192.168.240.2:7077
+    networks:
+      spark-network:
+        ipv4_address: 192.168.240.3
+
+  spark-worker-2:
+    image: bitnami/spark:latest
+    container_name: spark-worker-2
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://192.168.240.2:7077
+    depends_on:
+      - spark-master
+    environment:
+      SPARK_MODE: worker
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 2g
+      SPARK_MASTER_URL: spark://192.168.240.2:7077
+    networks:
+      spark-network:
+        ipv4_address: 192.168.240.4
+
+networks:
+  spark-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.240.0/24
+
