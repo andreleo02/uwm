@@ -44,16 +44,13 @@ if __name__ == "__main__":
     BASE_API = "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets"
     API_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/records?order_by=time%20DESC&limit={limit}"
     API_WEATHER = f"{BASE_API}/meshed-sensor-type-1/records?order_by=time%20DESC&limit={limit}&timezone=Australia%2FMelbourne"
-    API_AIR = f"{BASE_API}/argyle-square-air-quality/records?order_by=time%20DESC&limit={limit}&timezone=Australia%2FMelbourne"
 
     EXPORT_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/exports/json?order_by=time%20DESC"
-    EXPORT_AIR = f"{BASE_API}/netvox-r718x-bin-sensor/exports/json?order_by=time%20DESC"
-    EXPORT_WEATHER = f"{BASE_API}/netvox-r718x-bin-sensor/exports/json?order_by=time%20DESC"
+    EXPORT_WEATHER = f"{BASE_API}/meshed-sensor-type-1/exports/json?order_by=time%20DESC"
 
     bins_api = ApiCall(url = API_BINS, export_url = EXPORT_BINS, collection_name = "bins", interval = 60, save_on_mongo = True, save_on_postgres = False)
-    weather_api = ApiCall(url = API_WEATHER, export_url = EXPORT_AIR, collection_name = "weather", interval = 300, save_on_mongo = True, save_on_postgres = False)
-    air_api = ApiCall(url = API_AIR, export_url = EXPORT_WEATHER, collection_name = "air", interval = 600, save_on_mongo = True, save_on_postgres = False)
-    api_calls = [bins_api, weather_api, air_api]
+    weather_api = ApiCall(url = API_WEATHER, export_url = EXPORT_WEATHER, collection_name = "weather", interval = 300, save_on_mongo = True, save_on_postgres = False)
+    api_calls = [bins_api, weather_api]
 
     dispatcher = Publisher()
 
