@@ -1,0 +1,4 @@
+py4j
+pandas
+psycopg2-binary
+pymongo[srv]

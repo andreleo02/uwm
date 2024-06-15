@@ -1,22 +1,20 @@
-FROM bitnami/spark:latest
+FROM bitnami/spark:3.5
 
-# Switch to root user to install dependencies
 USER root
 
-# Ensure the list directory exists and is writable, then install numpy
-RUN mkdir -p /var/lib/apt/lists/partial && \
-    apt-get update && \
-    apt-get install -y python3-pip && \
-    pip3 install numpy
+COPY main.py /opt/bitnami/spark/main.py
 
-# Switch back to the non-root user
-USER 1001
+COPY postgresql-42.7.3.jar /opt/bitnami/spark/jars/postgresql-42.7.3.jar
 
-# Copy the Python file into the container
-COPY machine_learning.py /opt/bitnami/spark/machine_learning.py
+COPY mongo-spark-connector_2.13-10.1.1.jar /opt/bitnami/spark/jars/mongo-spark-connector_2.13-10.1.1.jar
 
-# Set the working directory
-WORKDIR /opt/bitnami/spark
+#useful for utils folder
+RUN mkdir  /opt/bitnami/spark/utils 
+COPY utils /opt/bitnami/spark/utils/
+COPY requirements.txt /opt/bitnami/spark/requirements.txt
 
-# Specify the command to run the Spark master
+RUN pip install -r requirements.txt
+
 CMD ["bin/spark-class", "org.apache.spark.deploy.master.Master"]
+# per runnare il job
+#CMD ["spark-submit", "/opt/bitnami/spark/main.py"]

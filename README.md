@@ -32,6 +32,12 @@ docker compose up --build -d
 
 With the `-d` option, the terminal can be closed since it is detached from the containers.
 
+To execute the machine_learning script do:
+```
+python3 ./spark/exec_spark.py
+```
+
+
 
 Project for Big Data Technology Course 2023/2024
 

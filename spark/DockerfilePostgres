@@ -1,0 +1,3 @@
+FROM bitnami/spark:3.5
+
+COPY postgresql-42.7.3.jar /opt/bitnami/spark/jars/postgresql-42.7.3.jar
