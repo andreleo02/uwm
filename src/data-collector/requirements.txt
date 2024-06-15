@@ -3,3 +3,5 @@ schedule
 urllib3
 kafka-python
 pymongo[srv]
+sqlalchemy
+psycopg2

@@ -7,7 +7,6 @@ import time
 class ConnectionException(Exception):
     pass
 
-
 class Reader:
 
     def __init__(self, topic):
@@ -24,15 +23,13 @@ class Reader:
                                               api_version=(3, 7, 0),
                                               value_deserializer = lambda v: json.loads(v.decode('utf-8')))
             except NoBrokersAvailable as err:
-                self.logger.error("Unable to find a broker: {0}".format(err))
+                self.logger.error(f"Unable to find a broker: {err}")
                 time.sleep(10)
 
-        self.logger.info("We have a consumer {0}".format(time.time()))
+        self.logger.info(f"We have a consumer {time.time()}")
         self.consumer.subscribe(self.topic)
-        # Wait for the topic creation and seek back to the beginning
         self.consumer.poll(timeout_ms=10000)
         self.consumer.seek(TopicPartition(topic, 0), 0)
-        #self.logger.info("ok {0}".format(time.time()))
 
     def setup_logger(self):
         logger = logging.getLogger()
@@ -51,20 +48,16 @@ class Reader:
         the event payload is json.
         :return: The event in json form
         """
-        self.logger.info("Reading stream: {0}".format(self.topic))
         try:
             if self.consumer:
                 self.logger.info("A consumer is calling 'next'")
                 try:
-                    # This would be cleaner using `next(consumer)` except
-                    # that there is no timeout on that call.
                     event_partitions = self.consumer.poll(timeout_ms=100,
-                                                          max_records=1)
+                                                          max_records=100)
                     event_list = list(event_partitions.values())
                     payload = event_list[0][0]
                     event = payload.value
-                    self.logger.debug('Read an event from the stream {}'.
-                                      format(event))
+                    self.logger.info(f'Read an event from the stream {event}')
                     try:
                         return event
                     except json.decoder.JSONDecodeError:

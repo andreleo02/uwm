@@ -3,3 +3,4 @@ schedule
 urllib3
 kafka-python
 python-dateutil
+pymongo[srv]

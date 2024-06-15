@@ -14,7 +14,7 @@ class Publisher:
                 self.producer = KafkaProducer(bootstrap_servers="kafka:9092", api_version=(3, 7, 0),
                                               value_serializer = lambda v: json.dumps(v).encode('utf-8'))
             except NoBrokersAvailable as err:
-                self.logger.error("Unable to find a broker: {0}".format(err))
+                self.logger.error(f"Unable to find a broker: {err}")
                 time.sleep(1)
 
     def setup_logger(self):
@@ -28,11 +28,10 @@ class Publisher:
         return logger
 
     def push(self, topic, message):
-        self.logger.info("Publishing: {0}".format(message))
+        self.logger.info(f"Publishing: {message}")
         try:
             if self.producer:
                 self.producer.send(topic, value = message)
                 self.producer.flush()
         except Exception:
-            self.logger.error("Unable to send {0}. The producer does not exist."
-                              .format(message))
+            self.logger.error(f"Unable to send {message}. The producer does not exist.")
