@@ -6,20 +6,25 @@ import dateutil.relativedelta
 from urllib import parse
 from classes.ApiCall import ApiCall
 from event_publisher import Publisher
+from utils.mongo_utils import is_collection_empty
 
 def read_data_api(api: ApiCall, historical_data: bool = True):
+    results = None
     if historical_data:
-        logger.info(f"Calling api to get historical data for collection '{api.collection_name()}' ...")
-        now = datetime.datetime.now()
-        one_month_ago = now + dateutil.relativedelta.relativedelta(months = -1)
-        logger.info(one_month_ago)
-        url = api.export_url() + parse.quote(f"&where=time>date'{one_month_ago}'", safe = "&=-")
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            results = data
+        if is_collection_empty(api.collection_name()):
+            logger.info(f"Calling api to get historical data for collection '{api.collection_name()}' ...")
+            now = datetime.datetime.now()
+            one_month_ago = now + dateutil.relativedelta.relativedelta(months = -1)
+            logger.info(one_month_ago)
+            url = api.export_url() + parse.quote(f"&where=time>date'{one_month_ago}'", safe = "&=-")
+            response = requests.get(url)
+            if response.status_code == 200:
+                data = response.json()
+                results = data
+            else:
+                logger.info(f"Error getting historical data for collection '{api.collection_name()}'. Calling url '{api.url()}'", response.status_code)
         else:
-            logger.info(f"Error getting historical data for collection '{api.collection_name()}'. Calling url '{api.url()}'", response.status_code)
+            logger.info("Historical data already present. Not calling the export api...")
     else:
         logger.info(f"Calling api to get new data for collection {api.collection_name()} ...")
         url = api.url() + parse.quote(f"&where=time>date'{api.last_data()}'", safe = "&=-")
@@ -34,9 +39,16 @@ def read_data_api(api: ApiCall, historical_data: bool = True):
         api.set_last_data(results[0]["time"])
         for res in results:
             logger.debug(f"request had the following data: {res}")
-            dispatcher.push(topic = api.collection_name(), message = res)
+            message = {
+                'sensor_data': res,
+                'historical': f'{historical_data}'
+            }
+            dispatcher.push(topic = api.collection_name(), message = message)
     else:
         logger.info(f"No new data found for collection '{api.collection_name()}'")
+    
+    if api.last_data() is None or api.last_data() == '':
+        api.set_last_data(str(datetime.datetime.now()))
 
 if __name__ == "__main__":
 
@@ -48,8 +60,8 @@ if __name__ == "__main__":
     EXPORT_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/exports/json?order_by=time%20DESC"
     EXPORT_WEATHER = f"{BASE_API}/meshed-sensor-type-1/exports/json?order_by=time%20DESC"
 
-    bins_api = ApiCall(url = API_BINS, export_url = EXPORT_BINS, collection_name = "bins", interval = 60, save_on_mongo = True, save_on_postgres = False)
-    weather_api = ApiCall(url = API_WEATHER, export_url = EXPORT_WEATHER, collection_name = "weather", interval = 300, save_on_mongo = True, save_on_postgres = False)
+    bins_api = ApiCall(url = API_BINS, export_url = EXPORT_BINS, collection_name = "bins", interval = 60)
+    weather_api = ApiCall(url = API_WEATHER, export_url = EXPORT_WEATHER, collection_name = "weather", interval = 300)
     api_calls = [bins_api, weather_api]
 
     dispatcher = Publisher()

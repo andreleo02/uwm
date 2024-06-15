@@ -1,12 +1,22 @@
+import psycopg2
+import logging
 from sqlalchemy import create_engine, Column, String, Numeric, Integer, DateTime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 user = 'postgres'
 password = 'password'
-host = 'localhost'
+host = 'postgres'
 database = 'db_waste'
 port = '5432'
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+if len(logger.handlers) == 0:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
 DATABASE_URI = f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}'
 
@@ -72,12 +82,17 @@ def insert_bins(bin_data):
                     battery=bin['battery'],
                     fill_level=bin['fill_level'],
                     temperature=bin['temperature'],
-                    latitude=bin['latitude'],
-                    longitude=bin['longitude'])
+                    latitude=bin['latitude'] if 'latitude' in bin else None,
+                    longitude=bin['longitude'] if 'longitude' in bin else None)
             )
-    session.add_all(new_bins)
-    session.commit()
-    close_session(session=session)
+    try:
+        session.add_all(new_bins)
+        session.commit()
+        logger.info(f"Saved new {len(new_bins)} bins data on postgres")
+    except Exception as e:
+        logger.error("Error saving new data on 'bins' table", e)
+    finally:
+        close_session(session=session)
 
 def insert_weather(weather_data):
     session = get_db_session(uri=DATABASE_URI)
@@ -99,4 +114,11 @@ def insert_weather(weather_data):
                         atmospheric_pressure=weather['atmospheric_pressure'],
                         relative_humidity=weather['relative_humidity'])
             )
-    close_session(session=session)
+    try:
+        session.add_all(new_weather)
+        session.commit()
+        logger.info(f"Saved new {len(new_weather)} weather data on postgres")
+    except Exception as e:
+        logger.error("Error saving new data on 'weather' table", e)
+    finally:
+        close_session(session=session)

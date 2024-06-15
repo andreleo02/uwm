@@ -18,6 +18,7 @@ services:
       dockerfile: ./Dockerfile
     depends_on:
       - kafka
+      - data-notifier
 
   mongo:
     image: mongo
@@ -89,7 +90,6 @@ services:
     depends_on:
       - kafka
 
-
   spark-master:
     build:
       context: spark
@@ -104,7 +104,7 @@ services:
     networks:
       spark-network:
         ipv4_address: 192.168.240.2
-    volumes:   #questo serve per montare il file spark.sh per avere le autorizzazioni necessarie
+    volumes: #questo serve per montare il file spark.sh per avere le autorizzazioni necessarie
       - ./spark.sh:/spark.sh
 
   spark-worker-1:
@@ -143,4 +143,3 @@ networks:
     ipam:
       config:
         - subnet: 192.168.240.0/24
-
