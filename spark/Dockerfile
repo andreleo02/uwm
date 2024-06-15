@@ -1,22 +1,26 @@
-FROM bitnami/spark:latest
+FROM bitnami/spark:3.5
 
-# Switch to root user to install dependencies
 USER root
 
-# Ensure the list directory exists and is writable, then install numpy
-RUN mkdir -p /var/lib/apt/lists/partial && \
-    apt-get update && \
-    apt-get install -y python3-pip && \
-    pip3 install numpy
+COPY main.py /opt/bitnami/spark/main.py
 
-# Switch back to the non-root user
-USER 1001
+# Install necessary libraries
+RUN apt-get update && apt-get install -y wget
+# COPY postgresql-42.7.3.jar /opt/bitnami/spark/jars/postgresql-42.7.3.jar
 
-# Copy the Python file into the container
-COPY machine_learning.py /opt/bitnami/spark/machine_learning.py
+#useful for utils folder
+RUN mkdir  /opt/bitnami/spark/utils 
+COPY utils /opt/bitnami/spark/utils/
+COPY requirements.txt /opt/bitnami/spark/requirements.txt
 
-# Set the working directory
-WORKDIR /opt/bitnami/spark
+RUN pip install -r requirements.txt
 
-# Specify the command to run the Spark master
+RUN wget -P /opt/bitnami/spark/jars/ https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.3.0/mongo-spark-connector_2.12-10.3.0.jar
+RUN wget -P /opt/bitnami/spark/jars/ https://repo1.maven.org/maven2/org/mongodb/bson/5.1.1/bson-5.1.1.jar
+RUN wget -P /opt/bitnami/spark/jars/ https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/5.1.1/mongodb-driver-core-5.1.1.jar
+RUN wget -P /opt/bitnami/spark/jars/ https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/5.1.1/mongodb-driver-sync-5.1.1.jar
+
+
 CMD ["bin/spark-class", "org.apache.spark.deploy.master.Master"]
+# per runnare il job
+#CMD ["spark-submit", "/opt/bitnami/spark/main.py"]

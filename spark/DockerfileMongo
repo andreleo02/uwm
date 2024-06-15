@@ -1,0 +1,3 @@
+FROM bitnami/spark:3.5
+
+COPY mongo-spark-connector_2.13-10.1.1.jar /opt/bitnami/spark/jars/mongo-spark-connector_2.13-10.1.1.jar
