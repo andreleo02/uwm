@@ -1,6 +1,7 @@
 import time, json, logging
 import multiprocessing
-from event_reader import Reader, ConnectionException
+from utils.kafka_event_reader import Reader, ConnectionException
+from utils.kafka_event_publisher import Publisher
 from utils.mongo_utils import save_data_on_mongo
 from utils.postgres_utils import insert_bins, insert_weather
 
@@ -9,6 +10,7 @@ MAX_MESSAGES = 100
 
 def process_topic(topic):
     reader = Reader(topic = topic)
+    dispatcher = Publisher()
     logging.info(f"Reading data from topic {topic} ...")
 
     historical_messages = []
@@ -33,6 +35,10 @@ def process_topic(topic):
         if (len(historical_messages) > 0 and time.time() - start_timeout > MAX_TIMEOUT) or len(historical_messages) >= MAX_MESSAGES:
             save_data_on_mongo(data = historical_messages, collection_name = topic)
             historical_messages = []
+            dispatcher.push(topic='export', message={'export_status': 'in_progress'})
+        else:
+            # this means that the export is completed
+            dispatcher.push(topic='export', message={'export_status': 'completed'})
 
         if (len(new_messages) > 0 and time.time() - start_timeout > MAX_TIMEOUT) or len(new_messages) >= MAX_MESSAGES:
             save_data_on_mongo(data = new_messages, collection_name = topic)
@@ -41,7 +47,7 @@ def process_topic(topic):
             elif topic == "weather":
                 insert_weather(weather_data = new_messages)
             new_messages = []
-
+ 
         time.sleep(1)
 
 if __name__ == "__main__":

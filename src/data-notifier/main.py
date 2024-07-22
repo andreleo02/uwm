@@ -5,7 +5,7 @@ import datetime
 import dateutil.relativedelta
 from urllib import parse
 from classes.ApiCall import ApiCall
-from event_publisher import Publisher
+from utils.kafka_event_publisher import Publisher
 from utils.mongo_utils import is_collection_empty
 
 def read_data_api(api: ApiCall, historical_data: bool = True):
@@ -15,7 +15,6 @@ def read_data_api(api: ApiCall, historical_data: bool = True):
             logger.info(f"Calling api to get historical data for collection '{api.collection_name()}' ...")
             now = datetime.datetime.now()
             one_month_ago = now + dateutil.relativedelta.relativedelta(months = -1)
-            logger.info(one_month_ago)
             url = api.export_url() + parse.quote(f"&where=time>date'{one_month_ago}'", safe = "&=-")
             response = requests.get(url)
             if response.status_code == 200:
