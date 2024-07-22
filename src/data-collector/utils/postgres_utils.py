@@ -88,7 +88,7 @@ def insert_bins(bin_data):
     try:
         session.add_all(new_bins)
         session.commit()
-        logger.info(f"Saved new {len(new_bins)} bins data on postgres")
+        logger.info(f"Saved {len(new_bins)} new bins data on postgres")
     except Exception as e:
         logger.error("Error saving new data on 'bins' table", e)
     finally:
@@ -117,7 +117,7 @@ def insert_weather(weather_data):
     try:
         session.add_all(new_weather)
         session.commit()
-        logger.info(f"Saved new {len(new_weather)} weather data on postgres")
+        logger.info(f"Saved {len(new_weather)} new weather data on postgres")
     except Exception as e:
         logger.error("Error saving new data on 'weather' table", e)
     finally:
