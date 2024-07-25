@@ -50,7 +50,7 @@ class Reader:
         """
         try:
             if self.consumer:
-                self.logger.info("A consumer is calling 'next'")
+                self.logger.debug("A consumer is calling 'next'")
                 try:
                     event_partitions = self.consumer.poll(timeout_ms=100,
                                                           max_records=100)

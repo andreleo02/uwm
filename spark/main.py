@@ -2,7 +2,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StringType, FloatType, StructField, MapType
 from utils.kafka_event_reader import Reader, ConnectionException
-import logging, time, json
+from urllib import parse
+import logging, time, json, datetime, dateutil, requests
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -78,6 +79,23 @@ class MongoDBHandler:
         logger.info("Getting sensors count ...")
         sensors_count = df.select("dev_id").distinct().count()
         logger.info(f"Count of distinct sensors in the df: {sensors_count}")
+    
+    def write_export_data(self, collection_name: str, file_path='./data.csv'):
+        logger.info("Loading bins data from csv file ...")
+        df = self.spark.read.csv(file_path, header=True, inferSchema=True, sep=';')
+        df.write.format('mongodb')\
+            .mode('append')\
+            .option('database', self.DATABASE_NAME)\
+            .option('collection', collection_name)\
+            .save()
+
+BASE_API = "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets"
+EXPORT_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/exports/csv?order_by=time%20DESC"
+EXPORT_WEATHER = f"{BASE_API}/meshed-sensor-type-1/exports/csv?order_by=time%20DESC"
+EXPORT_PATHS = {
+    'bins': EXPORT_BINS,
+    'weather': EXPORT_WEATHER
+}
 
 if __name__ == "__main__":
     logger.info("Starting SparkSession")
@@ -89,21 +107,40 @@ if __name__ == "__main__":
 
     logger.info("SparkSession started")
 
-    reader = Reader(topic = 'export')
-    waiting_data_export = True
-    while waiting_data_export:
-        message = reader.next()
-        if message is not None and message != '':
-            waiting_data_export = message['export_status'] == 'in_progress'
-            reader = None
-        time.sleep(1)
-    
     try:
         mongo_handler = MongoDBHandler(spark)
+
         df_bins = mongo_handler.read_bins_data()
-        logger.info(f"Retrieved {df_bins.count()} entries from MongoDB about bins")
         df_weather = mongo_handler.read_weather_data()
+
+        collections = []
+        if df_bins.count() == 0:
+            collections.append('bins')
+        if df_weather.count() == 0:
+            collections.append('weather')
+
+        for collection_name in collections:
+            logger.info(f"Calling api to get historical data for collection '{collection_name}' ...")
+            now = datetime.datetime.now()
+            one_month_ago = now + dateutil.relativedelta.relativedelta(months = -1)
+            url = EXPORT_PATHS[collection_name] + parse.quote(f"&where=time>date'{one_month_ago}'", safe = "&=-")
+            response = requests.get(url)
+            if response.status_code == 200:
+                with open(f'./{collection_name}.csv', 'wb') as file:
+                    file.write(response.content)
+                mongo_handler.write_export_data(collection_name=collection_name,
+                                                file_path=f'./{collection_name}.csv')
+            else:
+                logger.info(f"Error getting historical data for collection '{collection_name}'. Calling url '{url}'", response.status_code)
+
+        if df_bins.count() == 0:
+            df_bins = mongo_handler.read_bins_data()
+        logger.info(f"Retrieved {df_bins.count()} entries from MongoDB about bins")
+        
+        if df_weather.count() == 0:
+            df_weather = mongo_handler.read_weather_data()
         logger.info(f"Retrieved {df_weather.count()} entries from MongoDB about weather")
+
         mongo_handler.get_sensors_count(df_bins)
         mongo_handler.get_sensors_count(df_weather)
 

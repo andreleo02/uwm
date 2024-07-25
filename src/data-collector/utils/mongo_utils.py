@@ -29,7 +29,7 @@ def save_data_on_mongo(data, collection_name):
     collection = get_or_create_collection(mongo_db = mongo_db, collection_name = collection_name)
     try:
         insert_data(mongo_collection = collection, data = data)
-        logger.info(f"Saved {len(data)} new data on mongo collection '{collection_name}'")
+        logger.info(f"Saved {len(data)} {collection_name} data on mongo collection")
     except Exception as e:
         logger.error("Error saving new data on mongo", e)
     
