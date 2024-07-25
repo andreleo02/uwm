@@ -114,8 +114,10 @@ if __name__ == "__main__":
         df_weather = mongo_handler.read_weather_data()
 
         collections = []
-        collections.append('bins' if df_bins.count() == 0 else None)
-        collections.append('weather' if df_weather.count() == 0 else None)
+        if df_bins.count() == 0:
+            collections.append('bins')
+        if df_weather.count() == 0:
+            collections.append('weather')
 
         for collection_name in collections:
             logger.info(f"Calling api to get historical data for collection '{collection_name}' ...")
@@ -131,10 +133,14 @@ if __name__ == "__main__":
             else:
                 logger.info(f"Error getting historical data for collection '{collection_name}'. Calling url '{url}'", response.status_code)
 
-        df_bins = mongo_handler.read_bins_data()
+        if df_bins.count() == 0:
+            df_bins = mongo_handler.read_bins_data()
         logger.info(f"Retrieved {df_bins.count()} entries from MongoDB about bins")
-        df_weather = mongo_handler.read_weather_data()
+        
+        if df_weather.count() == 0:
+            df_weather = mongo_handler.read_weather_data()
         logger.info(f"Retrieved {df_weather.count()} entries from MongoDB about weather")
+
         mongo_handler.get_sensors_count(df_bins)
         mongo_handler.get_sensors_count(df_weather)
 
