@@ -82,8 +82,8 @@ def insert_bins(bin_data):
                     battery=bin['battery'],
                     fill_level=bin['fill_level'],
                     temperature=bin['temperature'],
-                    latitude=bin['latitude'] if 'latitude' in bin else None,
-                    longitude=bin['longitude'] if 'longitude' in bin else None)
+                    latitude=bin['lat_long']['lat'] if bin['lat_long'] is not None else None,
+                    longitude=bin['lat_long']['lon'] if bin['lat_long'] is not None else None)
             )
     try:
         session.add_all(new_bins)
@@ -105,8 +105,8 @@ def insert_weather(weather_data):
                         battery=weather['battery'],
                         precipitation=weather['precipitation'],
                         air_temp=weather['air_temp'],
-                        latitude=weather['latitude'],
-                        longitude=weather['longitude'],
+                        latitude=weather['lat_long']['lat'],
+                        longitude=weather['lat_long']['lon'],
                         wind_speed=weather['wind_speed'],
                         wind_direction=weather['wind_direction'],
                         gust_speed=weather['gust_speed'],

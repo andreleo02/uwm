@@ -1,5 +1,7 @@
 FROM bitnami/spark:3.5
 
+WORKDIR /app
+
 USER root
 
 COPY main.py /opt/bitnami/spark/main.py
@@ -9,7 +11,7 @@ RUN apt-get update && apt-get install -y wget
 # COPY postgresql-42.7.3.jar /opt/bitnami/spark/jars/postgresql-42.7.3.jar
 
 #useful for utils folder
-RUN mkdir  /opt/bitnami/spark/utils 
+RUN mkdir /opt/bitnami/spark/utils 
 COPY utils /opt/bitnami/spark/utils/
 COPY requirements.txt /opt/bitnami/spark/requirements.txt
 
