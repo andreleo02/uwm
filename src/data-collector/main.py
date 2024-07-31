@@ -3,6 +3,7 @@ import multiprocessing
 from utils.kafka_event_reader import Reader, ConnectionException
 from utils.mongo_utils import save_data_on_mongo
 from utils.postgres_utils import insert_bins, insert_weather
+from utils.redis_utils import update_bins_statuses, update_weather_statuses
 
 MAX_TIMEOUT = 5
 MAX_MESSAGES = 100
@@ -30,8 +31,10 @@ def process_topic(topic):
             save_data_on_mongo(data = new_messages, collection_name = topic)
             if topic == "bins":
                 insert_bins(bin_data = new_messages)
+                update_bins_statuses(bin_data = new_messages)
             elif topic == "weather":
                 insert_weather(weather_data = new_messages)
+                update_weather_statuses(weather_data = new_messages)
             new_messages = []
 
         time.sleep(0.5)

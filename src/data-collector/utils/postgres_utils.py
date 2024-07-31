@@ -27,10 +27,7 @@ class Bin(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     dev_id = Column(String(50), nullable=False)
-    time = Column(DateTime, nullable=False)
-    battery = Column(Numeric, nullable=True)
-    fill_level = Column(Numeric, nullable=False)
-    temperature = Column(Numeric, nullable=False)
+    sensor_name = Column(String(50), nullable=False)
     latitude = Column(Numeric, nullable=True)
     longitude = Column(Numeric, nullable=True)
 
@@ -39,6 +36,7 @@ class Weather(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     dev_id = Column(String(50), nullable=False)
+    sensor_name = Column(String(50), nullable=False)
     time = Column(DateTime, nullable=False)
     battery = Column(Numeric, nullable=True)
     air_temp = Column(Numeric, nullable=False)
@@ -52,36 +50,39 @@ class Weather(Base):
     atmospheric_pressure = Column(Numeric, nullable=True)
     relative_humidity = Column(Numeric, nullable=True)
 
-def get_db_session(uri: str):
+def _get_db_session(uri: str):
     engine = create_engine(uri)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     return Session()
 
-def close_session(session):
+def _close_session(session):
     session.close()
 
 def bin_is_valid(bin):
-    valid = 'dev_id' in bin and 'time' in bin and 'temperature' in bin and 'fill_level' in bin and 'battery' in bin
-    valid = valid and (bin['fill_level'] >= 0 and bin['fill_level'] <= 100) and (bin['battery'] >= 0 and bin['battery'] <= 100)
-    return valid
+    return 'dev_id' in bin and 'sensor_name' in bin and bin['dev_id'] != '' and bin['sensor_name'] != ''
+
+def bin_not_present(session, dev_id: str) -> bool:
+    return session.query(Bin)\
+        .filter_by(dev_id=dev_id)\
+        .count() == 0
 
 def weather_is_valid(weather):
-    valid = 'dev_id' in weather and 'time' in weather and 'air_temp' in weather and 'battery' in weather
-    valid = valid and (weather['battery'] >= 0 and weather['battery'] <= 100)
-    return valid
+    return 'dev_id' in weather and 'sensor_name' in weather and weather['dev_id'] != '' and weather['sensor_name'] != ''
+
+def weather_not_present(session, dev_id: str) -> bool:
+    return session.query(Weather)\
+        .filter_by(dev_id=dev_id)\
+        .count() == 0
 
 def insert_bins(bin_data):
-    session = get_db_session(uri=DATABASE_URI)
+    session = _get_db_session(uri=DATABASE_URI)
     new_bins = []
     for bin in bin_data:
-        if bin_is_valid(bin):
+        if bin_is_valid(bin) and bin_not_present(session, bin['dev_id']):
             new_bins.append(
                 Bin(dev_id=bin['dev_id'],
-                    time=bin['time'],
-                    battery=bin['battery'],
-                    fill_level=bin['fill_level'],
-                    temperature=bin['temperature'],
+                    sensor_name=bin['sensor_name'],
                     latitude=bin['lat_long']['lat'] if bin['lat_long'] is not None else None,
                     longitude=bin['lat_long']['lon'] if bin['lat_long'] is not None else None)
             )
@@ -92,27 +93,28 @@ def insert_bins(bin_data):
     except Exception as e:
         logger.error("Error saving new data on 'bins' table", e)
     finally:
-        close_session(session=session)
+        _close_session(session=session)
 
 def insert_weather(weather_data):
-    session = get_db_session(uri=DATABASE_URI)
+    session = _get_db_session(uri=DATABASE_URI)
     new_weather = []
     for weather in weather_data:
-        if weather_is_valid(weather):
+        if weather_is_valid(weather) and weather_not_present(session=session, dev_id=weather['dev_id']):
             new_weather.append(
                 Weather(dev_id=weather['dev_id'],
+                        sensor_name=weather['sensor_name'],
                         time=weather['time'],
                         battery=weather['battery'],
                         precipitation=weather['precipitation'],
-                        air_temp=weather['air_temp'],
-                        latitude=weather['lat_long']['lat'],
-                        longitude=weather['lat_long']['lon'],
-                        wind_speed=weather['wind_speed'],
-                        wind_direction=weather['wind_direction'],
-                        gust_speed=weather['gust_speed'],
-                        vapour_pressure=weather['vapour_pressure'],
-                        atmospheric_pressure=weather['atmospheric_pressure'],
-                        relative_humidity=weather['relative_humidity'])
+                        air_temp=weather['airtemp'],
+                        latitude=weather['lat_long']['lat'] if weather['lat_long'] is not None else None,
+                        longitude=weather['lat_long']['lon'] if weather['lat_long'] is not None else None,
+                        wind_speed=weather['windspeed'],
+                        wind_direction=weather['winddirection'],
+                        gust_speed=weather['gustspeed'],
+                        vapour_pressure=weather['vapourpressure'],
+                        atmospheric_pressure=weather['atmosphericpressure'],
+                        relative_humidity=weather['relativehumidity'])
             )
     try:
         session.add_all(new_weather)
@@ -121,4 +123,4 @@ def insert_weather(weather_data):
     except Exception as e:
         logger.error("Error saving new data on 'weather' table", e)
     finally:
-        close_session(session=session)
+        _close_session(session=session)

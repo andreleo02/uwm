@@ -28,10 +28,7 @@ class Bin(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     dev_id = Column(String(50), nullable=False)
-    time = Column(DateTime, nullable=False)
-    battery = Column(Numeric, nullable=True)
-    fill_level = Column(Numeric, nullable=False)
-    temperature = Column(Numeric, nullable=False)
+    sensor_name = Column(String(50), nullable=False)
     latitude = Column(Numeric, nullable=True)
     longitude = Column(Numeric, nullable=True)
 
@@ -40,18 +37,9 @@ class Weather(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     dev_id = Column(String(50), nullable=False)
-    time = Column(DateTime, nullable=False)
-    battery = Column(Numeric, nullable=True)
-    air_temp = Column(Numeric, nullable=False)
+    sensor_name = Column(String(50), nullable=False)
     latitude = Column(Numeric, nullable=True)
     longitude = Column(Numeric, nullable=True)
-    precipitation = Column(Numeric, nullable=True)
-    wind_speed = Column(Numeric, nullable=True)
-    wind_direction = Column(Numeric, nullable=True)
-    gust_speed = Column(Numeric, nullable=True)
-    vapour_pressure = Column(Numeric, nullable=True)
-    atmospheric_pressure = Column(Numeric, nullable=True)
-    relative_humidity = Column(Numeric, nullable=True)
 
 def _get_db_session():
     engine = create_engine(DATABASE_URI)
@@ -89,18 +77,30 @@ def get_all_bins() -> list[Bin]:
         _close_session(session=session)
         return latest_observations
 
-def get_bin_prediction(dev_id: str) -> float:
+def get_bin_details(dev_id: str) -> Bin:
     session = _get_db_session()
 
-    fill_level = -1
+    bin = None
     try:
         bin = session.query(Bin)\
             .filter_by(dev_id=dev_id)\
-            .order_by(Bin.time.desc())\
             .first()
-        fill_level = bin.fill_level if bin is not None else -1
     except Exception as e:
-        logger.error(f"Error retrieving prediction for bin with dev_id={dev_id}", e)
+        logger.error(f"Error retrieving bin details with dev_id={dev_id}", e)
     finally:
         _close_session(session=session)
-        return fill_level
+    return bin
+
+def get_weather_details(dev_id: str) -> Weather:
+    session = _get_db_session()
+
+    weather = None
+    try:
+        weather = session.query(Weather)\
+            .filter_by(dev_id=dev_id)\
+            .first()
+    except Exception as e:
+        logger.error(f"Error retrieving weather details with dev_id={dev_id}", e)
+    finally:
+        _close_session(session=session)
+    return weather
