@@ -4,6 +4,7 @@ from pyspark.sql.types import StructType, StringType, FloatType, StructField, Ma
 from utils.kafka_event_reader import Reader, ConnectionException
 from urllib import parse
 import logging, time, json, datetime, dateutil, requests
+from utils.machine_learning import *
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -17,7 +18,7 @@ bins_struct_type = StructType([
     StructField('battery', FloatType()),
     StructField('dev_id', StringType()),
     StructField('fill_level', FloatType()),
-    StructField('lat_long', MapType(StringType(), FloatType())),
+    StructField('lat_long', StringType()),#MapType(StringType(), FloatType())),
     StructField('sensor_name', StringType()),
     StructField('temperature', FloatType()),
     StructField('time', StringType())
@@ -30,7 +31,7 @@ weather_struct_type = StructType([
     StructField('command', FloatType()),
     StructField('dev_id', StringType()),
     StructField('gustspeed', FloatType()),
-    StructField('lat_long', MapType(StringType(), FloatType())),
+    StructField('lat_long', StringType()),#MapType(StringType(), FloatType())),
     StructField('precipitation', FloatType()),
     StructField('relativehumidity', FloatType()),
     StructField('rtc', FloatType()),
@@ -143,6 +144,9 @@ if __name__ == "__main__":
 
         mongo_handler.get_sensors_count(df_bins)
         mongo_handler.get_sensors_count(df_weather)
+
+        # Predictions (machine_learning.py)
+        main_ml(logger, spark, df_bins, df_weather)
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")

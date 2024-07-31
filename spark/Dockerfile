@@ -23,7 +23,9 @@ RUN wget -P /opt/bitnami/spark/jars/ https://repo1.maven.org/maven2/org/mongodb/
 RUN wget -P /opt/bitnami/spark/jars/ https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/5.1.1/mongodb-driver-sync-5.1.1.jar
 # TODO: add postGres
 #RUN wget P /opt/bitnami/spark/jars/ https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar
-
+# Set PYTHONPATH
+ENV PYTHONPATH="${PYTHONPATH}:/opt/bitnami/spark/"
 # CMD ["bin/spark-class", "org.apache.spark.deploy.master.Master"]
 # per runnare il job
 ENTRYPOINT ["/opt/bitnami/spark/bin/spark-submit", "--master", "local[*]", "/opt/bitnami/spark/main.py"]
+
