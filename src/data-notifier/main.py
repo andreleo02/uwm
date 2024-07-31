@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     limit = 100 # max is 100
     BASE_API = "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets"
-    API_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/records?order_by=time%20DESC&limit={limit}"
+    API_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/records?order_by=time%20DESC&limit={limit}&timezone=Australia%2FMelbourne"
     API_WEATHER = f"{BASE_API}/meshed-sensor-type-1/records?order_by=time%20DESC&limit={limit}&timezone=Australia%2FMelbourne"
 
     bins_api = {

@@ -5,3 +5,4 @@ kafka-python
 pymongo[srv]
 sqlalchemy
 psycopg2
+redis[hiredis]

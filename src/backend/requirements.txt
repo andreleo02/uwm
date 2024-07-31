@@ -2,3 +2,4 @@ Flask
 sqlalchemy
 psycopg2
 marshmallow
+redis[hiredis]
