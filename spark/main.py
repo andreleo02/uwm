@@ -5,6 +5,7 @@ from utils.kafka_event_reader import Reader, ConnectionException
 from urllib import parse
 import logging, time, json, datetime, dateutil, requests
 from utils.machine_learning import *
+from utils.routing_alg import *
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -122,7 +123,9 @@ if __name__ == "__main__":
 
         for collection_name in collections:
             logger.info(f"Calling api to get historical data for collection '{collection_name}' ...")
-            now = datetime.datetime.now()
+            from datetime import datetime
+            now = datetime.now()
+            #now = datetime.datetime.now()
             one_month_ago = now + dateutil.relativedelta.relativedelta(months = -1)
             url = EXPORT_PATHS[collection_name] + parse.quote(f"&where=time>date'{one_month_ago}'", safe = "&=-")
             response = requests.get(url)
@@ -145,14 +148,14 @@ if __name__ == "__main__":
         mongo_handler.get_sensors_count(df_bins)
         mongo_handler.get_sensors_count(df_weather)
 
-        # Predictions (machine_learning.py)
-        main_ml(logger, spark, df_bins, df_weather)
+        ######### Predictions (machine_learning.py)
+        #main_ml(logger, spark, df_bins, df_weather)
+        ######### Routing algorithm (routing_alg.py)
+        #main_routingalg(logger, df_bins)
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")
     
-    # do the ml stuff
-
     while True:
         # update the predictions of the beans on demand
         # getting the demand from Kafka(?) i think is the smartest solution
