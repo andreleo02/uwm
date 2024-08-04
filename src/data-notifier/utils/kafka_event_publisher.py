@@ -33,5 +33,5 @@ class Publisher:
             if self.producer:
                 self.producer.send(topic, value = message)
                 self.producer.flush()
-        except Exception:
-            self.logger.error(f"Unable to send {message}. The producer does not exist.")
+        except Exception as e:
+            self.logger.error(f"Unable to send {message}. The producer does not exist. Exception: {e}")
