@@ -9,6 +9,7 @@ bins_api = Blueprint('bins_api', __name__)
 def get_bins():
     bin_statuses = get_all_bins()
     result = prettify_bin_statuses(bin_statuses=bin_statuses)
+    print("Result: ", result)   
     return jsonify(result)
 
 @bins_api.route('/<string:dev_id>/status', methods=['GET'])
