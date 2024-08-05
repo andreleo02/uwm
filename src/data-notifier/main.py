@@ -11,6 +11,7 @@ from datetime import datetime
 
 def read_data_api(api):
     dispatcher = Publisher()
+    melbourne_tz = pytz.timezone('Australia/Melbourne')
     while True:
         results = None
         logger.info(f"Calling API to get new data for collection {api['collection_name']} ...")
@@ -31,7 +32,7 @@ def read_data_api(api):
             logger.info(f"No new data found for collection '{api['collection_name']}'")
         
         if not api['last_data']:
-            api['last_data'] = str(datetime.now())
+            api['last_data'] = str(datetime.now(melbourne_tz))
 
         time.sleep(api['interval'])
 
@@ -63,6 +64,7 @@ def get_pedestrian_data():
             
             for _, row in latest_rows.iterrows():
                 row_dict = row.to_dict()
+                row_dict['dev_id'] = 'ped-c302-3h01'
                 dispatcher.push(topic='pedestrian_data', message=row_dict)
         else:
             logger.info(f"No data available to publish to Kafka topic '{'pedestrian_data'}'")
@@ -72,7 +74,7 @@ def get_pedestrian_data():
 if __name__ == "__main__":
     limit = 100  # max is 100
     BASE_API = "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets"
-    API_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/records?order_by=time%20DESC&limit={limit}"
+    API_BINS = f"{BASE_API}/netvox-r718x-bin-sensor/records?order_by=time%20DESC&limit={limit}&timezone=Australia%2FMelbourne"
     API_WEATHER = f"{BASE_API}/meshed-sensor-type-1/records?order_by=time%20DESC&limit={limit}&timezone=Australia%2FMelbourne"
 
     melbourne_tz = pytz.timezone('Australia/Melbourne')
