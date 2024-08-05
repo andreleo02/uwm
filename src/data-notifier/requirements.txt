@@ -1,3 +1,6 @@
 requests
 urllib3
 kafka-python
+pandas
+numpy
+pytz
