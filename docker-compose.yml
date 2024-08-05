@@ -31,7 +31,7 @@ services:
   redis:
     image: bitnami/redis
     ports:
-      - 6379:6379
+      - 6386:6386
     environment:
       - REDIS_DATABASE=urban-waste
       - ALLOW_EMPTY_PASSWORD=yes

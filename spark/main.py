@@ -149,7 +149,7 @@ if __name__ == "__main__":
         mongo_handler.get_sensors_count(df_weather)
 
         ######### Predictions (machine_learning.py)
-        #last_row_weather, grouped_bins  = main_ml(logger, spark, df_bins, df_weather)
+        last_row_weather, grouped_bins  = main_ml(logger, spark, df_bins, df_weather)
         # export to REDIS last_row_weather, grouped_bins
         
         ######### Routing algorithm (routing_alg.py)
