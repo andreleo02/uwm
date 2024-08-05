@@ -39,3 +39,13 @@ def update_weather_statuses(weather_data):
             'relative_humidity': weather['relativehumidity']
         })
     logger.info(f"Saved {len(weather_data)} weather data on redis")
+
+def update_pedestrian_statuses(pedestrian_data):
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    for pedestrian in pedestrian_data:
+        r.hset(f"pedestrian:{pedestrian['dev_id']}:{pedestrian['region']}", mapping={
+            'last_edit': pedestrian['datetime'],
+            'region': pedestrian['region'],
+            'numVisitors': pedestrian['numVisitors']
+        })
+    logger.info(f"Saved {len(pedestrian_data)} pedestrian data on redis")

@@ -69,3 +69,14 @@ def prettify_weather_details(weather_status, weather_details):
             'sensorName': weather_details.sensor_name
         }
     return result
+
+def prettify_pedestrians(pedestrians):
+    result = []
+    for pedestrian in pedestrians:
+        result.append({
+            'id': pedestrian['dev_id'],
+            'lastEdit': pedestrian['last_edit'],
+            'numVisitors': pedestrian['numVisitors'],
+            'region': pedestrian['region']
+        })
+    return result
