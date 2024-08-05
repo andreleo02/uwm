@@ -69,24 +69,24 @@ def main_merging(logger, df_bins, df_weather):
     df_bins = df_bins.filter(F.col('time') >= threshold_time_utc)
 
     grouped_bins = df_bins.groupBy("dev_id").agg({"fill_level": "last", "time": "last"})
-    last_row = df_weather.select('time', 'precipitation', 'strikes', 'windspeed', 'airtemp').orderBy(F.desc("time")).limit(1)
+    last_row_weather = df_weather.select('time', 'precipitation', 'strikes', 'windspeed', 'airtemp').orderBy(F.desc("time")).limit(1)
 
     # if last_row['precipitation'] < 1:
     #     print("NO RAIN")
 
-    print(last_row.show())
+    print(last_row_weather.show())
     print(grouped_bins.show())
-    logger.info(f"Last weather data: {last_row.show()}")
+    logger.info(f"Last weather data: {last_row_weather.show()}")
     logger.info(f"Grouped bins data: {grouped_bins.show()}")
-    return
+    return last_row_weather, grouped_bins
 
 def main_ml(logger, spark, df_bins, df_weather):
     logger.info("Starting machine learning preparations")
     bins_clean, weather_clean = main_cleaning(logger, df_bins, df_weather)
     bins_clean = bins_clean.filter((col("fill_level") >= 0) & (col("fill_level") <= 100))
-    main_merging(logger, bins_clean, weather_clean)
+    last_row_weather, grouped_bins = main_merging(logger, bins_clean, weather_clean)
     logger.info("Merging finished")
-    return
+    return last_row_weather, grouped_bins
 
 
 

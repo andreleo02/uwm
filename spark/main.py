@@ -149,9 +149,11 @@ if __name__ == "__main__":
         mongo_handler.get_sensors_count(df_weather)
 
         ######### Predictions (machine_learning.py)
-        #main_ml(logger, spark, df_bins, df_weather)
+        #last_row_weather, grouped_bins  = main_ml(logger, spark, df_bins, df_weather)
+        # export to REDIS last_row_weather, grouped_bins
+        
         ######### Routing algorithm (routing_alg.py)
-        #main_routingalg(logger, df_bins)
+        optimal_path = main_routingalg(logger, df_bins)
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")

@@ -6,18 +6,51 @@ import logging
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 from scipy.optimize import linear_sum_assignment
-
+from datetime import datetime, timedelta
+import json
+import logging
+import pytz
+from pyspark.sql import SparkSession, functions as F
+from pyspark.sql.functions import col, split, to_timestamp, udf
+from pyspark.sql.types import DoubleType, StringType
 
 def apply_longlag_transformations(logger, df):
-    """Convert the column lat_long containing a json to two columns latitude and longitude."""
-    
+    """Convert the column lat_long containing a json to two columns."""
     logger.info("Starting apply_longlag_transformations")
     
     df = df.withColumn("latitude", split(col("lat_long"), ", ")[0].cast(DoubleType()))
     df = df.withColumn("longitude", split(col("lat_long"), ", ")[1].cast(DoubleType()))
     df = df.dropna(subset=["latitude", "longitude"])
     
-    logger.info(f"Applied longlag transf with {df.count()} entries")
+    logger.info(f"DEBG LATLONG COUNT {df.count()} entries")
+    return df
+
+def extract_date(json_str):
+    try:
+        return json.loads(json_str).get("$date", json_str)
+    except Exception as e:
+        return json_str
+
+extract_date_udf = udf(extract_date, StringType())
+
+def apply_datetime_transformations(logger, df):
+    """Parse date column."""
+    logger.info("Starting apply_datetime_transformations")
+    df = df.dropna("all", subset=["time"])
+    
+    if 'time' in df.columns:
+        time_column_type = df.schema['time'].dataType.simpleString()
+        logger.info(f"Time column type: {time_column_type}")
+
+        if time_column_type == 'struct<$date:string>':
+            df = df.withColumn("time", to_timestamp(col("time.$date"), 'yyyy-MM-dd\'T\'HH:mm:ss\'Z\''))
+        else:
+            df = df.withColumn("time_extracted", extract_date_udf(col("time")))
+            df = df.withColumn("time", to_timestamp(col("time_extracted"), 'yyyy-MM-dd\'T\'HH:mm:ss\'Z\'')).drop("time_extracted")
+
+    df = df.dropna("all", subset=["time"])
+    logger.info(f"Schema after datetime transformations: {df.schema}")
+    logger.info(f"Row count after transformations: {df.count()}")
     return df
 
 def routing_alg(logger, df):
@@ -53,6 +86,13 @@ def main_routingalg(logger, df_bins):
     """Main function to apply the routing algorithm."""
     logger.info("Starting main_routingalg")
     df_bins = apply_longlag_transformations(logger, df_bins)
+    df_bins = apply_datetime_transformations(logger, df_bins)
+
+    utc_now = datetime.now(pytz.utc)
+    melbourne_now = utc_now.astimezone(pytz.timezone('Australia/Melbourne'))
+    threshold_time_utc = (melbourne_now - timedelta(hours=300)).astimezone(pytz.utc)
+    df_bins = df_bins.filter(F.col('time') >= threshold_time_utc)
+
 
     df = df_bins.withColumn("latitude", col("latitude").cast(DoubleType()))
     df = df.withColumn("longitude", col("longitude").cast(DoubleType()))
@@ -65,12 +105,12 @@ def main_routingalg(logger, df_bins):
     optimal_path = routing_alg(logger, df_tsp)
     return optimal_path
 
-## execution ##
-# logger = logging.getLogger()
-# logger.setLevel(logging.INFO)
-# spark = SparkSession.builder \
-#     .appName("Read JSON in Spark") \
-#     .getOrCreate()
-# df_bins = spark.read.json("spark/utils/bins.json")
-# optimal_path = main_routingalg(logger, df_bins)
+# execution LOCALE ##
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+spark = SparkSession.builder \
+    .appName("Read JSON in Spark") \
+    .getOrCreate()
+df_bins = spark.read.json("spark/utils/bins.json")
+optimal_path = main_routingalg(logger, df_bins)
 
