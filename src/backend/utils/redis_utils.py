@@ -41,3 +41,21 @@ def get_weather_status(dev_id: str):
     weather_data = r.hgetall(f'weather:{dev_id}')
     weather_data['dev_id'] = dev_id
     return weather_data
+
+def get_all_pedestrians():
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    keys = r.scan_iter(match='pedestrian:*')
+    pedestrians = []
+    for key in keys:
+        splits = str(key).split(':')
+        dev_id = splits[1]
+        region = splits[2]
+        data = get_pedestrian(dev_id=dev_id, region=region)
+        pedestrians.append(data)
+    return pedestrians
+
+def get_pedestrian(dev_id: str, region: str):
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    pedestrian = r.hgetall(f'pedestrian:{dev_id}:{region}')
+    pedestrian['dev_id'] = dev_id
+    return pedestrian
