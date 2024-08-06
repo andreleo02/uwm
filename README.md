@@ -17,8 +17,11 @@
 </div>
 
 
-Mongo Express: [http://localhost:8081/db/urban_waste/]
-Kafka UI: [http://localhost:9000/]
+- Mongo Express: [http://localhost:8081/db/urban_waste/]
+- Kafka UI: [http://localhost:9000/]
+- Web dashboard
+
+The project was developed in a Ubuntu Machine
 
 ## How to run the application with docker compose
 
