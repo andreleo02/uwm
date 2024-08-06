@@ -45,7 +45,7 @@ def apply_datetime_transformations(logger, df):
     logger.info(f"Row count after transformations: {df.count()}")
     return df
 
-def main_cleaning(logger, df_bins, df_weather):
+def main_cleaning(logger, df_bins, df_weather, df_pedestrian):
     logger.info("Main cleaning")
     df_bins = apply_datetime_transformations(logger, df_bins)
     df_bins = apply_longlag_transformations(logger, df_bins)
@@ -61,7 +61,7 @@ def main_cleaning(logger, df_bins, df_weather):
     logger.info(f"Final weather schema: {df_weather.schema}")
     return df_bins, df_weather
 
-def main_merging(logger, df_bins, df_weather):
+def main_merging(logger, df_bins, df_weather, df_pedestrian):
     utc_now = datetime.now(pytz.utc)
     melbourne_now = utc_now.astimezone(pytz.timezone('Australia/Melbourne'))
     threshold_time_utc = (melbourne_now - timedelta(hours=300)).astimezone(pytz.utc)
@@ -80,7 +80,7 @@ def main_merging(logger, df_bins, df_weather):
     logger.info(f"Grouped bins data: {grouped_bins.show()}")
     return last_row_weather, grouped_bins
 
-def main_ml(logger, spark, df_bins, df_weather):
+def main_ml(logger, spark, df_bins, df_weather, df_pedestrian):
     logger.info("Starting machine learning preparations")
     bins_clean, weather_clean = main_cleaning(logger, df_bins, df_weather)
     bins_clean = bins_clean.filter((col("fill_level") >= 0) & (col("fill_level") <= 100))

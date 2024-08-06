@@ -46,6 +46,15 @@ weather_struct_type = StructType([
     StructField('windspeed', FloatType())
 ])
 
+
+pedestrian_struct_type = StructType([
+    StructField('datetime', StringType()),
+    StructField('region', StringType()),
+    StructField('numVisitors', StringType()),
+    StructField('dev_id', StringType()),
+])
+
+
 class MongoDBHandler:
     def __init__(self, spark_session: SparkSession):
         self.spark = spark_session
@@ -56,6 +65,7 @@ class MongoDBHandler:
         self.DATABASE_NAME = "urban_waste"
         self.BINS_COLLECTION = "bins"
         self.WEATHER_COLLECTION = "weather"
+        self.PEDS_COLLECTION = "pedestrian_data"
         self.mongo_uri = f"mongodb://{self.MONGO_USER}:{self.MONGO_PASSWORD}@{self.MONGO_HOST}:{self.MONGO_PORT}/{self.DATABASE_NAME}?authSource=admin"
         logger.info(f"Initialized MongoDBHandler with URI: {self.mongo_uri}")
 
@@ -75,6 +85,15 @@ class MongoDBHandler:
             .option("uri", self.mongo_uri) \
             .option("database", self.DATABASE_NAME) \
             .option("collection", self.WEATHER_COLLECTION) \
+            .load("mongodb")
+    
+    def read_pedestrian_data(self) -> DataFrame:
+        logger.info("Reading weather data from MongoDB")
+        return self.spark.read.format("mongodb") \
+            .schema(pedestrian_struct_type) \
+            .option("uri", self.mongo_uri) \
+            .option("database", self.DATABASE_NAME) \
+            .option("collection", self.PEDS_COLLECTION) \
             .load("mongodb")
     
     def get_sensors_count(self, df: DataFrame) -> None:
@@ -114,6 +133,7 @@ if __name__ == "__main__":
 
         df_bins = mongo_handler.read_bins_data()
         df_weather = mongo_handler.read_weather_data()
+        df_pedestrian = mongo_handler.read_pedestrian_data()
 
         collections = []
         if df_bins.count() == 0:
@@ -149,7 +169,7 @@ if __name__ == "__main__":
         mongo_handler.get_sensors_count(df_weather)
 
         ######### Predictions (machine_learning.py)
-        last_row_weather, grouped_bins  = main_ml(logger, spark, df_bins, df_weather)
+        last_row_weather, grouped_bins  = main_ml(logger, spark, df_bins, df_weather,df_pedestrian)
         # export to REDIS last_row_weather, grouped_bins
         
         ######### Routing algorithm (routing_alg.py)

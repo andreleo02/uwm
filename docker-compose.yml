@@ -111,7 +111,7 @@ services:
 
   spark-master:
     build:
-      context: spark
+      context: src/spark
       dockerfile: ./Dockerfile
     container_name: spark-master
     command: /bin/bash -c "chmod +x /run.sh && bin/spark-class org.apache.spark.deploy.master.Master"
@@ -124,31 +124,11 @@ services:
       - ./run.sh:/run.sh
       #- ./mongo-spark-connector_2.13-10.1.1.jar:/opt/bitnami/spark/jars/mongo-spark-connector_2.13-10.1.1.jar
 
-    # networks:
-    #   spark-network:
-    #     ipv4_address: 192.168.240.2
-    # volumes:   #questo serve per montare il file spark.sh per avere le autorizzazioni necessarie
-    #   - ./spark.sh:/spark.sh
-
-  # spark-worker-1:
-  #   build:
-  #     context: spark
-  #     dockerfile: ./DockerfilePostgres
-  #   container_name: spark-worker-1
-  #   command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
-  #   depends_on:
-  #     - spark-master
-  #   environment:
-  #     SPARK_MODE: worker
-  #     SPARK_WORKER_CORES: 2
-  #     SPARK_WORKER_MEMORY: 2g
-  #     SPARK_MASTER_URL: spark://spark-master:7077
-
-  spark-worker-2:
+  spark-worker-1:
     build:
-      context: spark
+      context: src/spark
       dockerfile: ./DockerfileMongo
-    container_name: spark-worker-2
+    container_name: spark-worker-1
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       - spark-master
@@ -157,39 +137,4 @@ services:
       SPARK_WORKER_CORES: 2
       SPARK_WORKER_MEMORY: 2g
       SPARK_MASTER_URL: spark://spark-master:7077
-
-  # spark-worker-1:
-  #   image: bitnami/spark:latest
-  #   container_name: spark-worker-1
-  #   #command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://192.168.240.2:7077
-  #   depends_on:
-  #     - spark-master
-  #   environment:
-  #     SPARK_MODE: worker
-  #     SPARK_WORKER_CORES: 2
-  #     SPARK_WORKER_MEMORY: 2g
-  #     SPARK_MASTER_URL: spark://192.168.240.2:7077
-  # networks:
-  #   spark-network:
-  #     ipv4_address: 192.168.240.3
-#   spark-worker-2:
-#     image: bitnami/spark:latest
-#     container_name: spark-worker-2
-#     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://192.168.240.2:7077
-#     depends_on:
-#       - spark-master
-#     environment:
-#       SPARK_MODE: worker
-#       SPARK_WORKER_CORES: 2
-#       SPARK_WORKER_MEMORY: 2g
-#       SPARK_MASTER_URL: spark://192.168.240.2:7077
-#     networks:
-#       spark-network:
-#         ipv4_address: 192.168.240.4
-
-# networks:
-#   spark-network:
-#     driver: bridge
-#     ipam:
-#       config:
-#         - subnet: 192.168.240.0/24
+  

@@ -106,11 +106,11 @@ def main_routingalg(logger, df_bins):
     return optimal_path
 
 # execution LOCALE ##
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-spark = SparkSession.builder \
-    .appName("Read JSON in Spark") \
-    .getOrCreate()
-df_bins = spark.read.json("spark/utils/bins.json")
-optimal_path = main_routingalg(logger, df_bins)
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO)
+# spark = SparkSession.builder \
+#     .appName("Read JSON in Spark") \
+#     .getOrCreate()
+# df_bins = spark.read.json("spark/utils/bins.json")
+# optimal_path = main_routingalg(logger, df_bins)
 
