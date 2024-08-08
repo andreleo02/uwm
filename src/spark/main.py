@@ -6,7 +6,7 @@ from utils.kafka_event_reader import Reader, ConnectionException
 from urllib import parse
 from utils.machine_learning import *
 from utils.routing_alg import *
-from utils.redis_utils import save_predictions
+from utils.redis_utils import save_predictions, save_optimal_path
 from datetime import datetime
 
 logger = logging.getLogger()
