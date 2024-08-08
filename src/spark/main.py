@@ -1,11 +1,13 @@
+import logging, time, json, dateutil, requests, pytz
 from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType, StringType, FloatType, StructField, MapType
 from utils.kafka_event_reader import Reader, ConnectionException
 from urllib import parse
-import logging, time, json, datetime, dateutil, requests
 from utils.machine_learning import *
 from utils.routing_alg import *
+from utils.redis_utils import save_predictions
+from datetime import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -19,6 +21,7 @@ bins_struct_type = StructType([
     StructField('battery', FloatType()),
     StructField('dev_id', StringType()),
     StructField('fill_level', FloatType()),
+    StructField('filllevel', FloatType()),
     StructField('lat_long', StringType()),#MapType(StringType(), FloatType())),
     StructField('sensor_name', StringType()),
     StructField('temperature', FloatType()),
@@ -102,7 +105,7 @@ class MongoDBHandler:
         logger.info(f"Count of distinct sensors in the df: {sensors_count}")
     
     def write_export_data(self, collection_name: str, file_path='./data.csv'):
-        logger.info("Loading bins data from csv file ...")
+        logger.info(f"Loading {collection_name} data from csv file ...")
         df = self.spark.read.csv(file_path, header=True, inferSchema=True, sep=';')
         df.write.format('mongodb')\
             .mode('append')\
@@ -140,14 +143,14 @@ if __name__ == "__main__":
             collections.append('bins')
         if df_weather.count() == 0:
             collections.append('weather')
+        
+        melbourne_tz = pytz.timezone('Australia/Melbourne')
 
         for collection_name in collections:
             logger.info(f"Calling api to get historical data for collection '{collection_name}' ...")
-            from datetime import datetime
-            now = datetime.now()
-            #now = datetime.datetime.now()
-            one_month_ago = now + dateutil.relativedelta.relativedelta(months = -1)
-            url = EXPORT_PATHS[collection_name] + parse.quote(f"&where=time>date'{one_month_ago}'", safe = "&=-")
+            now = datetime.now(melbourne_tz)
+            three_months_ago = now + dateutil.relativedelta.relativedelta(months = -3)
+            url = EXPORT_PATHS[collection_name] + parse.quote(f"&where=time>date'{three_months_ago}'", safe = "&=-")
             response = requests.get(url)
             if response.status_code == 200:
                 with open(f'./{collection_name}.csv', 'wb') as file:
@@ -165,15 +168,13 @@ if __name__ == "__main__":
             df_weather = mongo_handler.read_weather_data()
         logger.info(f"Retrieved {df_weather.count()} entries from MongoDB about weather")
 
-        mongo_handler.get_sensors_count(df_bins)
-        mongo_handler.get_sensors_count(df_weather)
-
         ######### Predictions (machine_learning.py)
-        last_row_weather, grouped_bins  = main_ml(logger, spark, df_bins, df_weather,df_pedestrian)
-        # export to REDIS last_row_weather, grouped_bins
-        
+        latest_weather, grouped_bins = main_ml(spark, df_bins, df_weather, df_pedestrian)
+        save_predictions(latest_weather=latest_weather.collect(), grouped_bins=grouped_bins.collect())
+
         ######### Routing algorithm (routing_alg.py)
-        optimal_path = main_routingalg(logger, df_bins)
+        optimal_path = main_routingalg(df_bins)
+        save_optimal_path(optimal_path)
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")

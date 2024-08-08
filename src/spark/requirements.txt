@@ -1,7 +1,9 @@
 kafka-python
 py4j
+pytz
 pandas
 psycopg2-binary
 pymongo[srv]
+redis[hiredis]
 requests
 scipy

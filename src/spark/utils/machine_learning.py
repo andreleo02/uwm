@@ -6,7 +6,16 @@ from pyspark.sql import SparkSession, functions as F
 from pyspark.sql.functions import col, split, to_timestamp, udf
 from pyspark.sql.types import DoubleType, StringType
 
-def apply_longlag_transformations(logger, df):
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+if len(logger.handlers) == 0:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+
+def apply_latlong_transformations(df):
     """Convert the column lat_long containing a json to two columns."""
     logger.info("Starting apply_longlag_transformations")
     
@@ -25,7 +34,7 @@ def extract_date(json_str):
 
 extract_date_udf = udf(extract_date, StringType())
 
-def apply_datetime_transformations(logger, df):
+def apply_datetime_transformations(df):
     """Parse date column."""
     logger.info("Starting apply_datetime_transformations")
     df = df.dropna("all", subset=["time"])
@@ -45,23 +54,27 @@ def apply_datetime_transformations(logger, df):
     logger.info(f"Row count after transformations: {df.count()}")
     return df
 
-def main_cleaning(logger, df_bins, df_weather, df_pedestrian):
+def main_cleaning(df_bins, df_weather, df_pedestrian):
     logger.info("Main cleaning")
-    df_bins = apply_datetime_transformations(logger, df_bins)
-    df_bins = apply_longlag_transformations(logger, df_bins)
-    df_weather = apply_datetime_transformations(logger, df_weather)
-    df_weather = apply_longlag_transformations(logger, df_weather)
+    df_bins = apply_datetime_transformations(df_bins)
+    df_bins = apply_latlong_transformations(df_bins)
+    df_weather = apply_datetime_transformations(df_weather)
+    df_weather = apply_latlong_transformations(df_weather)
 
     # Additional cleaning specific to df_weather
     df_weather = df_weather.dropDuplicates(["time"]).drop("battery", "dev_id", "sensor_name", "date", "time_only", "latitude", "longitude", "_id", "lat_long")
     df_bins = df_bins.withColumnRenamed("temperature", "bin_temperature")
+
+    df_bins = df_bins.withColumn("fill_level",
+                                 F.coalesce(col("filllevel"), col("fill_level")))
+    df_bins = df_bins.drop("filllevel")
 
     logger.info("Completed cleaning")
     logger.info(f"Final bins schema: {df_bins.schema}")
     logger.info(f"Final weather schema: {df_weather.schema}")
     return df_bins, df_weather
 
-def main_merging(logger, df_bins, df_weather, df_pedestrian):
+def main_merging(df_bins, df_weather, df_pedestrian):
     utc_now = datetime.now(pytz.utc)
     melbourne_now = utc_now.astimezone(pytz.timezone('Australia/Melbourne'))
     threshold_time_utc = (melbourne_now - timedelta(hours=300)).astimezone(pytz.utc)
@@ -69,24 +82,19 @@ def main_merging(logger, df_bins, df_weather, df_pedestrian):
     df_bins = df_bins.filter(F.col('time') >= threshold_time_utc)
 
     grouped_bins = df_bins.groupBy("dev_id").agg({"fill_level": "last", "time": "last"})
-    last_row_weather = df_weather.select('time', 'precipitation', 'strikes', 'windspeed', 'airtemp').orderBy(F.desc("time")).limit(1)
+    latest_weather = df_weather.select('time', 'precipitation', 'strikes', 'windspeed', 'airtemp').orderBy(F.desc("time")).limit(1)
 
-    # if last_row['precipitation'] < 1:
-    #     print("NO RAIN")
-
-    print(last_row_weather.show())
-    print(grouped_bins.show())
-    logger.info(f"Last weather data: {last_row_weather.show()}")
+    logger.info(f"Last weather data: {latest_weather.show()}")
     logger.info(f"Grouped bins data: {grouped_bins.show()}")
-    return last_row_weather, grouped_bins
+    return latest_weather, grouped_bins
 
-def main_ml(logger, spark, df_bins, df_weather, df_pedestrian):
+def main_ml(spark, df_bins, df_weather, df_pedestrian):
     logger.info("Starting machine learning preparations")
-    bins_clean, weather_clean = main_cleaning(logger, df_bins, df_weather)
+    bins_clean, weather_clean = main_cleaning(df_bins, df_weather, df_pedestrian)
     bins_clean = bins_clean.filter((col("fill_level") >= 0) & (col("fill_level") <= 100))
-    last_row_weather, grouped_bins = main_merging(logger, bins_clean, weather_clean)
+    latest_weather, grouped_bins = main_merging(bins_clean, weather_clean, df_pedestrian)
     logger.info("Merging finished")
-    return last_row_weather, grouped_bins
+    return latest_weather, grouped_bins
 
 
 
