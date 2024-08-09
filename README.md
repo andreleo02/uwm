@@ -28,7 +28,7 @@ docker compose up --build -d
 
 With the `-d` option, the terminal can be closed since it is detached from the containers.
 
-If redis-post is already in use, try: `sudo systemctl stop redis-server` before running the compose up.
+If redis is already in use, try: `sudo systemctl stop redis-server` before running the compose up.
 
 ## How it works
 The data-notifier component retrieves data from various sources, including the Bins/Weather Australian APIs and a synthetic data generator that simulates pedestrian counts based on historical data. This data is then transmitted via Kafka messages to the data-collector, whose primary role is to store the data in MongoDB (for all types of data, including historical data obtained from CSV files) and PostgreSQL (for static data, such as device IDs).
