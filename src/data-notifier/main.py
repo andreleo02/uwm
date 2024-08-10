@@ -2,7 +2,7 @@ import requests
 import logging
 import pandas as pd
 import pytz
-import time
+import time, dateutil
 import multiprocessing
 from urllib import parse
 from utils.kafka_event_publisher import Publisher
@@ -79,21 +79,23 @@ if __name__ == "__main__":
 
     melbourne_tz = pytz.timezone('Australia/Melbourne')
 
+    now = datetime.now(melbourne_tz)
+    ten_mins = now + dateutil.relativedelta.relativedelta(minutes = -10)
+
     bins_api = {
         'url': API_BINS,
         'collection_name': "bins",
         'interval': 60,
-        'last_data': str(datetime.now(melbourne_tz))
+        'last_data': str(ten_mins)
     }
 
     weather_api = {
         'url': API_WEATHER,
         'collection_name': "weather",
         'interval': 300,
-        'last_data': str(datetime.now(melbourne_tz))
+        'last_data': str(ten_mins)
     }
 
-    # Set up logging
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     if len(logger.handlers) == 0:
@@ -102,7 +104,6 @@ if __name__ == "__main__":
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
-    # Start processes
     bins_process = multiprocessing.Process(target=read_data_api, args=(bins_api,))
     weather_process = multiprocessing.Process(target=read_data_api, args=(weather_api,))
     pedestrian_process = multiprocessing.Process(target=get_pedestrian_data)

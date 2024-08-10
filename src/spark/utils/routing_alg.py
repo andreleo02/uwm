@@ -14,7 +14,15 @@ from pyspark.sql import SparkSession, functions as F
 from pyspark.sql.functions import col, split, to_timestamp, udf
 from pyspark.sql.types import DoubleType, StringType
 
-def apply_longlag_transformations(logger, df):
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+if len(logger.handlers) == 0:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+def apply_latlong_transformations(df):
     """Convert the column lat_long containing a json to two columns."""
     logger.info("Starting apply_longlag_transformations")
     
@@ -33,7 +41,7 @@ def extract_date(json_str):
 
 extract_date_udf = udf(extract_date, StringType())
 
-def apply_datetime_transformations(logger, df):
+def apply_datetime_transformations(df):
     """Parse date column."""
     logger.info("Starting apply_datetime_transformations")
     df = df.dropna("all", subset=["time"])
@@ -53,7 +61,7 @@ def apply_datetime_transformations(logger, df):
     logger.info(f"Row count after transformations: {df.count()}")
     return df
 
-def routing_alg(logger, df):
+def routing_alg(df):
     """Apply the Hungarian algorithm to find the optimal path."""
 
     data_list = df.select("dev_id", "latitude", "longitude").collect()
@@ -71,22 +79,16 @@ def routing_alg(logger, df):
 
     # Extract the optimal path and calculate the total distance
     optimal_path = [list(data.keys())[i] for i in col_ind]
-    #optimal_distances = dist_matrix[row_ind, col_ind]
 
-    print("Optimal path:", optimal_path)
-    # Export optimal path
-
-    # print("Distances on optimal path:", optimal_distances)
-    # print("Total distance:", sum(optimal_distances))
     logger.info(f"Applied routing algorithm")
 
     return optimal_path
 
-def main_routingalg(logger, df_bins):
+def main_routingalg(df_bins):
     """Main function to apply the routing algorithm."""
     logger.info("Starting main_routingalg")
-    df_bins = apply_longlag_transformations(logger, df_bins)
-    df_bins = apply_datetime_transformations(logger, df_bins)
+    df_bins = apply_latlong_transformations(df_bins)
+    df_bins = apply_datetime_transformations(df_bins)
 
     utc_now = datetime.now(pytz.utc)
     melbourne_now = utc_now.astimezone(pytz.timezone('Australia/Melbourne'))
@@ -102,7 +104,7 @@ def main_routingalg(logger, df_bins):
     # Select only the necessary columns for the TSP
     df_tsp = df_bins.select("dev_id", "latitude", "longitude")
 
-    optimal_path = routing_alg(logger, df_tsp)
+    optimal_path = routing_alg(df_tsp)
     return optimal_path
 
 # execution LOCALE ##
