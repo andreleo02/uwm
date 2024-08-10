@@ -25,9 +25,7 @@ def read_data_api(api):
 
         if results and len(results) > 0:
             api['last_data'] = results[0]["time"]
-            for res in results:
-                logger.debug(f"Request had the following data: {res}")
-                dispatcher.push(topic=api['collection_name'], message=res)
+            dispatcher.push(topic=api['collection_name'], messages=results)
         else:
             logger.info(f"No new data found for collection '{api['collection_name']}'")
         
@@ -61,11 +59,13 @@ def get_pedestrian_data():
         if not df.empty:
             num_rows = 4
             latest_rows = df.head(num_rows)
+            rows = []
             
             for _, row in latest_rows.iterrows():
                 row_dict = row.to_dict()
                 row_dict['dev_id'] = 'ped-c302-3h01'
-                dispatcher.push(topic='pedestrian_data', message=row_dict)
+                rows.append(row_dict)
+            dispatcher.push(topic='pedestrian_data', messages=rows)
         else:
             logger.info(f"No data available to publish to Kafka topic '{'pedestrian_data'}'")
 

@@ -27,11 +27,12 @@ class Publisher:
             logger.addHandler(handler)
         return logger
 
-    def push(self, topic, message):
-        self.logger.info(f"Publishing: {message}")
+    def push(self, topic, messages):
         try:
             if self.producer:
-                self.producer.send(topic, value = message)
+                for message in messages:
+                    self.logger.info(f"Publishing a message for topic '{topic}': {message}")
+                    self.producer.send(topic, value = message)
                 self.producer.flush()
         except Exception as e:
             self.logger.error(f"Unable to send {message}. The producer does not exist. Exception: {e}")

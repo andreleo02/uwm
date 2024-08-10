@@ -46,10 +46,11 @@ def save_predictions(latest_weather, grouped_bins):
     except Exception as e:
         logger.error(f"Error saving weather predictions on redis. Error {e}")
 
-def save_optimal_path(optimal_path):
+def save_optimal_path(optimal_path: list[str]):
     r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
     try:
-        r.lpush("optimal:path", optimal_path)
+        for device in optimal_path:
+            r.lpush("optimal:path", device)
         logger.info("Saved bins optimal path on redis")
     except Exception as e:
         logger.error(f"Error saving bins optimal path on redis. Error {e}")
