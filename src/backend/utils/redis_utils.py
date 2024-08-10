@@ -59,3 +59,14 @@ def get_pedestrian(dev_id: str, region: str):
     pedestrian = r.hgetall(f'pedestrian:{dev_id}:{region}')
     pedestrian['dev_id'] = dev_id
     return pedestrian
+
+def get_optimal_path():
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    optimal_path = []
+    try:
+        optimal_path = r.lrange("optimal:path", start=0, end=-1)
+        logger.info("Saved bins optimal path on redis")
+    except Exception as e:
+        logger.error(f"Error saving bins optimal path on redis. Error {e}")
+    finally:
+        return optimal_path
