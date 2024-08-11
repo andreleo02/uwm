@@ -21,7 +21,9 @@ Subsequently, the data undergoes processing using Spark to generate predictions 
 
 The backend component is responsible for retrieving the processed data and serving it to the frontend component (uwm-dashboard repository) using Flask, ensuring smooth and efficient communication between the server and the user interface.
 
-![Components Diagram](./UWM-diagram.png)
+<div align="center">
+  <img src="./UWM-diagram.png" />
+</div>  
 
 ## Web services
 - **MongoDB**: [http://localhost:8081/](http://localhost:8081/)
