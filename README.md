@@ -1,22 +1,6 @@
 # Urban Waste Management
 
-<div>
-  <img src="https://github.com/devicons/devicon/blob/master/icons/git/git-original-wordmark.svg" title="Git" **alt="Git" width="40" height="40"/>
-<img src="https://github.com/devicons/devicon/blob/master/icons/apachekafka/apachekafka-original-wordmark.svg" title="Kafka" alt="Kafka" width="40" height="40"/>
-<img src="https://github.com/devicons/devicon/blob/master/icons/python/python-original-wordmark.svg" title="Python" alt="Python" width="40" height="40"/>
-<img src="https://github.com/devicons/devicon/blob/master/icons/apachespark/apachespark-original.svg" title="Spark" alt="Spark" width="40" height="40"/>
-<img src="https://github.com/devicons/devicon/blob/master/icons/docker/docker-original-wordmark.svg" title="Docker" alt="Docker" width="40" height="40"/>
-<img src="https://github.com/devicons/devicon/blob/master/icons/postgresql/postgresql-original-wordmark.svg" title="Postgres" alt="Postgres" width="40" height="40"/>
-<img src="https://github.com/devicons/devicon/blob/master/icons/mongodb/mongodb-original-wordmark.svg" title="MongoDB" alt="MongoDB" width="40" height="40"/>
-<img src="https://github.com/devicons/devicon/blob/master/icons/redis/redis-original-wordmark.svg" title="Redis" alt="Redis" width="40" height="40"/>
-<img src="https://github.com/devicons/devicon/blob/master/icons/flask/flask-original-wordmark.svg" title="Flask" alt="Flask" width="40" height="40"/>
-
-
-</div>
-
-The project was developed in a Ubuntu Machine
-
-## How to run the application with docker compose
+## How to run the application
 
 Ensure to have Docker installed on the machine.
 
@@ -36,6 +20,8 @@ The data-notifier component retrieves data from various sources, including the B
 Subsequently, the data undergoes processing using Spark to generate predictions and calculate the optimal routing algorithms. Additional data required for the dashboard is fetched from MongoDB using Spark and then passed through the backend, utilizing Redis for efficient data handling and delivery.
 
 The backend component is responsible for retrieving the processed data and serving it to the frontend component (uwm-dashboard repository) using Flask, ensuring smooth and efficient communication between the server and the user interface.
+
+![Components Diagram](./UWM-diagram.png)
 
 ## Web services
 - **MongoDB**: [http://localhost:8081/](http://localhost:8081/)
