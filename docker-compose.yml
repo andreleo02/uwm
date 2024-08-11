@@ -7,6 +7,14 @@ services:
       context: src/backend
       dockerfile: ./Dockerfile
 
+  dashboard:
+    ports:
+      - 4200:4200
+    container_name: dashboard
+    build:
+      context: src/frontend
+      dockerfile: ./Dockerfile
+
   data-notifier:
     ports:
       - 8083:8083
@@ -30,6 +38,7 @@ services:
 
   redis:
     image: bitnami/redis
+    container_name: redis
     ports:
       - 6379:6379
     environment:
@@ -137,4 +146,3 @@ services:
       SPARK_WORKER_CORES: 2
       SPARK_WORKER_MEMORY: 2g
       SPARK_MASTER_URL: spark://spark-master:7077
-  
