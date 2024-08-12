@@ -6,7 +6,7 @@ RUN apk update && apk upgrade && \
     apk add git
 
 RUN git clone https://github.com/mard4/uwm-dashboard.git && \
-    npm install -g @angular/cli
+    npm install -g @angular/cli@17
 
 WORKDIR /app/uwm-dashboard
 
