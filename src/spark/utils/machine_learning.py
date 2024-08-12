@@ -82,9 +82,10 @@ def main_merging(logger, df_bins, df_weather, df_pedestrian):
 
 def main_ml(logger, spark, df_bins, df_weather, df_pedestrian):
     logger.info("Starting machine learning preparations")
-    bins_clean, weather_clean = main_cleaning(logger, df_bins, df_weather)
+    df_pedestrian = []
+    bins_clean, weather_clean = main_cleaning(logger, df_bins, df_weather, df_pedestrian)
     bins_clean = bins_clean.filter((col("fill_level") >= 0) & (col("fill_level") <= 100))
-    last_row_weather, grouped_bins = main_merging(logger, bins_clean, weather_clean)
+    last_row_weather, grouped_bins = main_merging(logger, bins_clean, weather_clean, df_pedestrian)
     logger.info("Merging finished")
     return last_row_weather, grouped_bins
 
